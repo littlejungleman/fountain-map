@@ -180,11 +180,10 @@
 
   /* ══════════════════════════════════════════
      MOBILE  ≤ 700px
-     Layout: header → info bar → map (fixed height) → map-note → list (scrollable)
-     Body itself scrolls; no overflow:hidden anywhere
+     Layout: header → info bar → map → map-note → list (scrollable)
+     Map comes first visually even though sidebar is first in HTML.
   ══════════════════════════════════════════ */
   @media (max-width:700px) {
-    /* Let body scroll naturally */
     body { height:auto; min-height:100dvh; overflow-y:auto; }
 
     .main-layout {
@@ -192,6 +191,10 @@
       overflow:visible;
       flex:none;
     }
+
+    /* Map appears first on mobile */
+    .map-wrap { order:1; }
+    #sidebar   { order:2; }
 
     /* Fixed-height map panel */
     .map-wrap {
@@ -206,7 +209,6 @@
       width:100%; min-width:unset;
       border-right:none;
       border-top:2px solid #e2e8f0;
-      /* No fixed height — content determines size */
       flex:none; overflow:visible;
     }
 
@@ -217,10 +219,7 @@
       -webkit-overflow-scrolling:touch;
     }
 
-    /* Hide legend in header on mobile (too cramped) */
     .legend { display:none; }
-
-    /* Slightly bigger tap targets */
     .fountain-item { padding:11px 12px; }
     .filter-tab { padding:7px 2px; font-size:0.75rem; }
   }

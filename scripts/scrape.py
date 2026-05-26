@@ -29,7 +29,7 @@ OUTPUT_FILE     = Path(__file__).parent.parent / "docs" / "data.json"
 
 SESSION = requests.Session()
 SESSION.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "User-Agent": "LondonFountainMap/1.0 (public hobby project scraping fountainwatch data; contact via github.com/littlejungleman/london-fountain-map; runs hourly)",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Language": "en-GB,en;q=0.9",
     "Connection": "keep-alive",
@@ -216,17 +216,23 @@ def get_live_statuses(html: str) -> dict:
     """
     Use AJAX only — the HTML table only contains the currently-visible page
     (~10 rows) because bablands uses server-side DataTables pagination.
-    Falling back to HTML would silently drop all rows on pages 2+.
     If AJAX fails, return empty dict and let the caller preserve old data.
     """
+    # Sanity check: if we got a rate-limit or error page, bail out
+    if "fountainwatch" not in html.lower() and "wpdatatable" not in html.lower():
+        print("  Page doesn't look like the fountainwatch page — may be an error page", file=sys.stderr)
+        return {}
+
     table_id, nonce = extract_wdt_config(html)
     print(f"  wpDataTables config: table_id={table_id}, nonce={nonce}")
     if not table_id:
-        print("  Could not find table_id in page — cannot fetch statuses", file=sys.stderr)
-        return {}
+        print("  Could not find table_id — trying to parse HTML table directly as fallback", file=sys.stderr)
+        # Last resort: try HTML parsing even though it only gets visible rows
+        # Better than nothing if AJAX config is unavailable
+        return get_live_statuses_html(html)
     statuses = get_live_statuses_ajax(table_id, nonce)
     if not statuses:
-        print("  AJAX returned no rows — NOT falling back to HTML (would only get ~10 rows)", file=sys.stderr)
+        print("  AJAX returned no rows", file=sys.stderr)
     return statuses
 
 
@@ -259,16 +265,8 @@ def load_existing_statuses() -> dict:
 
 
 def main():
-    # Brief pause to avoid hammering the server — especially important since
-    # cron-job.org now triggers this every 30 minutes
-    time.sleep(3)
-
-    # Warm up session
-    try:
-        SESSION.get("https://bablands.com/", timeout=15)
-        time.sleep(2)
-    except Exception:
-        pass
+    # Polite delay before starting — we are a guest on their server
+    time.sleep(5)
 
     print("Fetching fountain list...")
     fountain_list = []
