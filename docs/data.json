@@ -1,19 +1,19 @@
 {
-  "updated_at": "2026-05-26T10:03:49.710832+00:00",
+  "updated_at": "2026-05-26T10:01:10.744379+00:00",
   "fountains": [
     {
       "name": "Granary Square fountains, King's Cross",
       "lat": 51.5357,
       "lon": -0.12387,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-25T17:06:00+00:00"
     },
     {
       "name": "Lewis Cubitt Square fountains, King's Cross",
       "lat": 51.53755,
       "lon": -0.12359,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-25T15:10:00+00:00"
     },
     {
       "name": "Rosemary Gardens water play, Islington",
@@ -54,8 +54,8 @@
       "name": "Whittington Park water play, Archway",
       "lat": 51.56736,
       "lon": -0.11913,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-25T16:58:00+00:00"
     },
     {
       "name": "Barnard Park water play, Islington",
@@ -82,15 +82,15 @@
       "name": "Gloucester Gate Playground water play, Regent's Park, Camden Town",
       "lat": 51.53706,
       "lon": -0.15915,
-      "status": "unknown",
-      "reported_at": null
+      "status": "off",
+      "reported_at": "2026-05-25T16:02:00+00:00"
     },
     {
       "name": "Parliament Hill paddling pool, Hampstead Heath",
       "lat": 51.55837,
       "lon": -0.14892,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-25T15:48:00+00:00"
     },
     {
       "name": "Queen's Park paddling pool",
@@ -166,15 +166,15 @@
       "name": "Tumbling Bay water play, Queen Elizabeth Olympic Park",
       "lat": 51.54483,
       "lon": -0.01889,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-25T15:51:00+00:00"
     },
     {
       "name": "Waterworks Fountains (West Ham Stadium), Queen Elizabeth Olympic Park",
       "lat": 51.53882,
       "lon": -0.01605,
-      "status": "unknown",
-      "reported_at": null
+      "status": "off",
+      "reported_at": "2026-05-25T16:04:00+00:00"
     },
     {
       "name": "Gauging Square fountains, Wapping",
@@ -236,8 +236,8 @@
       "name": "Broadgate Exchange play fountains, Liverpool Street",
       "lat": 51.51909,
       "lon": -0.0835,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-25T16:52:00+00:00"
     },
     {
       "name": "St Mary's Churchyard Park fountains, Elephant & Castle",
@@ -320,8 +320,8 @@
       "name": "Ruskin Park paddling pool, Denmark Hill",
       "lat": 51.46083,
       "lon": -0.08984,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-25T16:42:00+00:00"
     },
     {
       "name": "Rookery paddling pool, Streatham Common",
@@ -523,8 +523,8 @@
       "name": "Coram's Fields paddling pool, Bloomsbury",
       "lat": 51.52359,
       "lon": -0.11977,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-25T16:46:00+00:00"
     },
     {
       "name": "Causton Street Playground water play, Pimlico",
