@@ -16,11 +16,25 @@ import json
 import os
 import time
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+
+if not API_KEY:
+    raise ValueError("Missing GOOGLE_MAPS_API_KEY in .env file")
 
 import requests
 
-COORDS_FILE = Path(__file__).parent / "fountain_coords.json"
-API_KEY = os.environ.get("GOOGLE_GEOCODING_API_KEY", "")
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+COORDS_FILE = BASE_DIR / "scripts" / "fountain_coords.json"
+
+print("Saving updated file...")
+print(COORDS_FILE)
 
 # Hand-crafted search queries for each fountain.
 # These are more specific than just the name and give Google's geocoder
