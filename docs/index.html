@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>London Fountain Map 💧</title>
-<meta name="description" content="Real-time status of water play fountains and splash pads across London. Is it on? Find out before you go.">
+<meta name="description" content="Real-time status of kids' water play fountains and splash pads across London. Is it on? Find out before you go.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -231,7 +231,7 @@
 <header>
   <div>
     <div class="logo">💧 <span>London</span> Fountain Map</div>
-    <div class="subtitle"> Live status of fountains and splash pads </div>
+    <div class="subtitle">Kids' water play — live status</div>
   </div>
   <div class="header-right">
     <div class="legend">
@@ -397,9 +397,13 @@ async function loadData() {
     filterList();
     updateStats(allFountains);
     const upd = data.updated_at ? new Date(data.updated_at) : null;
-    document.getElementById('updated-text').textContent = upd
-      ? `Scraped: ${upd.toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true})}`
-      : 'Data loaded';
+    const timeStr = upd ? upd.toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+    if (data.scrape_ok === false) {
+      document.getElementById('updated-text').innerHTML =
+        `⚠️ Could not reach bablands.com — showing last known data (${timeStr})`;
+    } else {
+      document.getElementById('updated-text').textContent = timeStr ? `Scraped: ${timeStr}` : 'Data loaded';
+    }
   } catch(err) {
     console.error(err);
     document.getElementById('error-msg').textContent='Could not load data. Please try reloading the page.';
