@@ -6,7 +6,7 @@ Live status (open/closed/no data) sourced from community reports on [bablands.co
 
 ---
 
-## 🚀 Deploy in ~5 minutes (free)
+## 🚀 Deploy 
 
 ### Step 1 — Create a GitHub account
 [github.com](https://github.com) → Sign up (free)
