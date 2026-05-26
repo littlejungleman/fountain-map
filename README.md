@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/28259423/README.md)
 # 💧 London Fountain Map
 
 **Real-time map of kids' water play fountains & splash pads across London.**
@@ -7,122 +6,104 @@ Live status (open/closed/no data) sourced from community reports on [bablands.co
 
 ---
 
-## 🚀 How to deploy (free, ~5 minutes)
+## 🚀 Deploy in ~5 minutes (free)
 
-### Step 1 — Create a GitHub account (if you don't have one)
-Go to [github.com](https://github.com) and sign up. It's free.
+### Step 1 — Create a GitHub account
+[github.com](https://github.com) → Sign up (free)
 
 ### Step 2 — Create a new repository
-1. Click the **+** button → **New repository**
-2. Name it: `london-fountain-map`
-3. Set it to **Public**
-4. Click **Create repository**
+- Click **+** → **New repository**
+- Name: `london-fountain-map`
+- Visibility: **Public**
+- Click **Create repository**
 
 ### Step 3 — Upload the files
-
-Either use the GitHub web interface to drag and drop the files, or use Git:
-
-```bash
-git clone https://github.com/YOUR_USERNAME/london-fountain-map
-cd london-fountain-map
-
-# Copy all the project files into this folder, then:
-git add .
-git commit -m "Initial commit"
-git push
-```
-
-The folder structure should look like:
+Drag and drop all project files into the repo via the GitHub web UI, preserving folder structure:
 ```
 london-fountain-map/
-├── .github/
-│   └── workflows/
-│       └── update-data.yml
+├── .github/workflows/update-data.yml
 ├── docs/
 │   ├── index.html
 │   └── data.json
 ├── scripts/
 │   ├── scrape.py
+│   ├── geocode_google.py
 │   ├── requirements.txt
 │   └── fountain_coords.json
 └── README.md
 ```
 
 ### Step 4 — Enable GitHub Pages
-1. Go to your repo → **Settings** → **Pages** (left sidebar)
-2. Under **Source**, select **Deploy from a branch**
-3. Branch: **main**, Folder: **/docs**
-4. Click **Save**
+**Settings → Pages → Source: main branch, /docs folder → Save**
 
-Your site will be live at:
-`https://YOUR_USERNAME.github.io/london-fountain-map/`
+Your site will be live at `https://YOUR_USERNAME.github.io/london-fountain-map/`
 
-(Takes ~1 minute to deploy for the first time.)
+### Step 5 — Run the first data update
+**Actions tab → "Update fountain data" → Run workflow**
 
-### Step 5 — Trigger the first data update
-1. Go to your repo → **Actions** tab
-2. Click **Update fountain data** in the left sidebar
-3. Click **Run workflow** → **Run workflow**
-
-This runs the scraper and updates `docs/data.json` with fresh data from bablands.com.
-
-After that, the scraper runs **automatically every 30 minutes**.
+The scraper runs automatically every 30 minutes from then on.
 
 ---
 
-## 📁 File guide
+## 📍 Improving coordinates (optional but recommended)
 
-| File | Purpose |
-|------|---------|
-| `docs/index.html` | The website — map + sidebar + search |
-| `docs/data.json` | Auto-generated data file (fountain list + statuses) |
-| `scripts/scrape.py` | Python scraper — run by GitHub Actions |
-| `scripts/fountain_coords.json` | Hardcoded lat/lon for all ~95 fountains |
-| `.github/workflows/update-data.yml` | Automation: runs scraper every 30 min |
+The included `fountain_coords.json` has manually-researched coordinates. For maximum precision, run the Google Geocoding script once:
+
+### Get a free Google Geocoding API key
+1. Go to [console.cloud.google.com](https://console.cloud.google.com/)
+2. Create a project → Enable **Geocoding API**
+3. Create an API key (free tier covers 40,000 geocodes/month)
+4. Restrict the key to "Geocoding API" only for safety
+
+### Run the geocoder
+```bash
+pip install requests
+export GOOGLE_GEOCODING_API_KEY="your_key_here"
+python scripts/geocode_google.py
+```
+
+This updates `fountain_coords.json` with precise coordinates and prints anything that moved >50m from the manual estimate. Commit the result.
 
 ---
 
-## 🛠 Keeping fountain coordinates up to date
-
-If bablands.com adds new fountains, you'll see them in the list sidebar with "No data" and they'll appear at coordinates `null` (invisible on map). To fix:
-
-1. Check `docs/data.json` — fountains with `"lat": null` need coordinates
-2. Look them up on [openstreetmap.org](https://www.openstreetmap.org)
-3. Add them to `scripts/fountain_coords.json`
-
----
-
-## 💡 How it works
+## 🛠 How it works
 
 ```
-Every 30 minutes:
-  GitHub Actions runs scrape.py
-    → Fetches bablands.com/fountainwatch/ (fountain list)
-    → Fetches bablands.com/fountainwatch-live/ (status table)
-    → Merges with fountain_coords.json (lat/lon)
+Every 30 minutes (GitHub Actions):
+  scrape.py runs
+    → GET bablands.com/fountainwatch/ (fountain name list)
+    → GET bablands.com/fountainwatch-live/ (live status table)
+    → Extracts wpDataTables table_id + nonce from page JS
+    → POSTs to wp-admin/admin-ajax.php, paginating through ALL rows
+      (75+ rows across 8 pages — gets them all)
+    → Picks newest status per fountain by timestamp
+    → Normalises curly apostrophes to straight (website uses King's,
+      coords file uses King's — must match)
+    → Merges with fountain_coords.json
     → Writes docs/data.json
     → Commits & pushes to GitHub
 
-Website visitor loads index.html
+Visitor loads index.html
   → Fetches data.json
-  → Renders Leaflet map with colour-coded markers
+  → Leaflet map: green=open, red=closed, grey=no data
   → Auto-refreshes every 10 minutes
 ```
 
 ---
 
-## 🎨 Customisation
+## 🗺 Adding a new fountain
 
-- **Change refresh rate**: Edit `cron` in `.github/workflows/update-data.yml` (minimum free tier: every 5 min)
-- **Change map default view**: Edit `center` and `zoom` in `index.html`
-- **Add a fountain**: Add coordinates to `scripts/fountain_coords.json`
+If bablands.com adds a fountain not yet in `fountain_coords.json`:
+1. Check `data.json` — it will appear with `"lat": null` (invisible on map)
+2. Add an entry to `fountain_coords.json`:
+```json
+{"name": "New Fountain Name, Area", "lat": 51.5123, "lon": -0.1234}
+```
+3. Commit and push — next scrape run will pick it up
 
 ---
 
 ## 📜 Credits
-
 - Fountain data: [bablands.com](https://bablands.com) by Emmy Watts
-- Map tiles: [OpenStreetMap](https://www.openstreetmap.org)
-- Mapping library: [Leaflet.js](https://leafletjs.com)
-- Hosting: [GitHub Pages](https://pages.github.com) (free)
-- Automation: [GitHub Actions](https://github.com/features/actions) (free)
+- Map: [Leaflet.js](https://leafletjs.com) + [OpenStreetMap](https://www.openstreetmap.org)
+- Hosting & automation: [GitHub Pages](https://pages.github.com) + [GitHub Actions](https://github.com/features/actions) (both free)
