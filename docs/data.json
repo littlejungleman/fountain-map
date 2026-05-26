@@ -1,19 +1,19 @@
 {
-  "updated_at": "2026-05-26T10:01:10.744379+00:00",
+  "updated_at": "2026-05-26T10:06:27.424289+00:00",
   "fountains": [
     {
-      "name": "Granary Square fountains, King's Cross",
-      "lat": 51.5357,
-      "lon": -0.12387,
-      "status": "on",
-      "reported_at": "2026-05-25T17:06:00+00:00"
+      "name": "Granary Square fountains, King\u2019s Cross",
+      "lat": null,
+      "lon": null,
+      "status": "unknown",
+      "reported_at": null
     },
     {
-      "name": "Lewis Cubitt Square fountains, King's Cross",
-      "lat": 51.53755,
-      "lon": -0.12359,
-      "status": "on",
-      "reported_at": "2026-05-25T15:10:00+00:00"
+      "name": "Lewis Cubitt Square fountains, King\u2019s Cross",
+      "lat": null,
+      "lon": null,
+      "status": "unknown",
+      "reported_at": null
     },
     {
       "name": "Rosemary Gardens water play, Islington",
@@ -54,8 +54,8 @@
       "name": "Whittington Park water play, Archway",
       "lat": 51.56736,
       "lon": -0.11913,
-      "status": "on",
-      "reported_at": "2026-05-25T16:58:00+00:00"
+      "status": "unknown",
+      "reported_at": null
     },
     {
       "name": "Barnard Park water play, Islington",
@@ -79,23 +79,23 @@
       "reported_at": null
     },
     {
-      "name": "Gloucester Gate Playground water play, Regent's Park, Camden Town",
-      "lat": 51.53706,
-      "lon": -0.15915,
-      "status": "off",
-      "reported_at": "2026-05-25T16:02:00+00:00"
+      "name": "Gloucester Gate Playground water play, Regent\u2019s Park, Camden Town",
+      "lat": null,
+      "lon": null,
+      "status": "unknown",
+      "reported_at": null
     },
     {
       "name": "Parliament Hill paddling pool, Hampstead Heath",
       "lat": 51.55837,
       "lon": -0.14892,
-      "status": "on",
-      "reported_at": "2026-05-25T15:48:00+00:00"
+      "status": "unknown",
+      "reported_at": null
     },
     {
-      "name": "Queen's Park paddling pool",
-      "lat": 51.53485,
-      "lon": -0.20383,
+      "name": "Queen\u2019s Park paddling pool",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -166,15 +166,15 @@
       "name": "Tumbling Bay water play, Queen Elizabeth Olympic Park",
       "lat": 51.54483,
       "lon": -0.01889,
-      "status": "on",
-      "reported_at": "2026-05-25T15:51:00+00:00"
+      "status": "unknown",
+      "reported_at": null
     },
     {
       "name": "Waterworks Fountains (West Ham Stadium), Queen Elizabeth Olympic Park",
       "lat": 51.53882,
       "lon": -0.01605,
-      "status": "off",
-      "reported_at": "2026-05-25T16:04:00+00:00"
+      "status": "unknown",
+      "reported_at": null
     },
     {
       "name": "Gauging Square fountains, Wapping",
@@ -184,16 +184,16 @@
       "reported_at": null
     },
     {
-      "name": "Goodman's Field fountains, Aldgate",
-      "lat": 51.51285,
-      "lon": -0.07339,
+      "name": "Goodman\u2019s Field fountains, Aldgate",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
     {
-      "name": "The Children's Play Pavilion & Park splash pad, Mile End Park",
-      "lat": 51.52175,
-      "lon": -0.03804,
+      "name": "The Children\u2019s Play Pavilion & Park splash pad, Mile End Park",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -236,13 +236,13 @@
       "name": "Broadgate Exchange play fountains, Liverpool Street",
       "lat": 51.51909,
       "lon": -0.0835,
-      "status": "on",
-      "reported_at": "2026-05-25T16:52:00+00:00"
+      "status": "unknown",
+      "reported_at": null
     },
     {
-      "name": "St Mary's Churchyard Park fountains, Elephant & Castle",
-      "lat": 51.49456,
-      "lon": -0.10028,
+      "name": "St Mary\u2019s Churchyard Park fountains, Elephant & Castle",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -296,9 +296,9 @@
       "reported_at": null
     },
     {
-      "name": "Myatt's Fields splash pad, Camberwell",
-      "lat": 51.46821,
-      "lon": -0.10468,
+      "name": "Myatt\u2019s Fields splash pad, Camberwell",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -320,8 +320,8 @@
       "name": "Ruskin Park paddling pool, Denmark Hill",
       "lat": 51.46083,
       "lon": -0.08984,
-      "status": "on",
-      "reported_at": "2026-05-25T16:42:00+00:00"
+      "status": "unknown",
+      "reported_at": null
     },
     {
       "name": "Rookery paddling pool, Streatham Common",
@@ -436,9 +436,9 @@
       "reported_at": null
     },
     {
-      "name": "Duke's Meadows paddling pool, Chiswick",
-      "lat": 51.48548,
-      "lon": -0.27007,
+      "name": "Duke\u2019s Meadows paddling pool, Chiswick",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -471,16 +471,16 @@
       "reported_at": null
     },
     {
-      "name": "Bishop's Park water play, Putney",
-      "lat": 51.47134,
-      "lon": -0.21793,
+      "name": "Bishop\u2019s Park water play, Putney",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
     {
-      "name": "Kew Gardens Children's Garden, Kew",
-      "lat": 51.47906,
-      "lon": -0.29578,
+      "name": "Kew Gardens Children\u2019s Garden, Kew",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -520,11 +520,11 @@
       "reported_at": null
     },
     {
-      "name": "Coram's Fields paddling pool, Bloomsbury",
-      "lat": 51.52359,
-      "lon": -0.11977,
-      "status": "on",
-      "reported_at": "2026-05-25T16:46:00+00:00"
+      "name": "Coram\u2019s Fields paddling pool, Bloomsbury",
+      "lat": null,
+      "lon": null,
+      "status": "unknown",
+      "reported_at": null
     },
     {
       "name": "Causton Street Playground water play, Pimlico",
@@ -541,9 +541,9 @@
       "reported_at": null
     },
     {
-      "name": "Marylebone Green Playground water play, Regent's Park, Marylebone",
-      "lat": 51.52557,
-      "lon": -0.15868,
+      "name": "Marylebone Green Playground water play, Regent\u2019s Park, Marylebone",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -555,9 +555,9 @@
       "reported_at": null
     },
     {
-      "name": "Jeppe Hein's Appearing Rooms, Southbank Centre",
-      "lat": 51.5052,
-      "lon": -0.11513,
+      "name": "Jeppe Hein\u2019s Appearing Rooms, Southbank Centre",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -590,9 +590,9 @@
       "reported_at": null
     },
     {
-      "name": "Splash 'n' Play, Willen Lake, Milton Keynes",
-      "lat": 52.0597,
-      "lon": -0.72659,
+      "name": "Splash \u2018n\u2019 Play, Willen Lake, Milton Keynes",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
@@ -646,9 +646,9 @@
       "reported_at": null
     },
     {
-      "name": "Verulamium splash park, St. Alban's",
-      "lat": 51.74797,
-      "lon": -0.35729,
+      "name": "Verulamium splash park, St. Alban\u2019s",
+      "lat": null,
+      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
