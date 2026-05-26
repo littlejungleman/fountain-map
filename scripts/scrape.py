@@ -16,7 +16,7 @@ import json
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import requests
@@ -44,15 +44,14 @@ def normalise(name: str) -> str:
             .strip())
 
 
-def fetch_html(url: str, retries: int = 3) -> str:
+def fetch_html(url: str, retries: int = 4) -> str:
     """Fetch URL with retry on 429/5xx. Waits progressively longer between attempts."""
-    delay = 10  # seconds between retries
     for attempt in range(1, retries + 1):
         try:
             r = SESSION.get(url, timeout=25)
             if r.status_code == 429:
-                wait = delay * attempt
-                print(f"  429 rate-limited, waiting {wait}s before retry {attempt}/{retries}...")
+                wait = 20 * attempt  # 20s, 40s, 60s, 80s
+                print(f"  429 rate-limited, waiting {wait}s (attempt {attempt}/{retries})...")
                 time.sleep(wait)
                 continue
             r.raise_for_status()
@@ -60,8 +59,9 @@ def fetch_html(url: str, retries: int = 3) -> str:
         except requests.HTTPError as e:
             if attempt == retries:
                 raise
-            print(f"  HTTP error {e}, retrying in {delay * attempt}s...")
-            time.sleep(delay * attempt)
+            wait = 15 * attempt
+            print(f"  HTTP {e}, retrying in {wait}s...")
+            time.sleep(wait)
     raise RuntimeError(f"Failed to fetch {url} after {retries} attempts")
 
 
@@ -87,9 +87,14 @@ def parse_status(raw: str) -> str | None:
 
 
 def parse_dt(s: str) -> datetime:
+    # bablands.com is a UK site — times are UK local (BST=UTC+1 in summer, GMT in winter).
+    # We always assume BST (UTC+1) during the splash pad season (Apr-Oct).
+    # Storing as UTC means the browser will display correctly in any timezone.
+    BST = timezone(timedelta(hours=1))
     for fmt in ("%d/%m/%Y %I:%M %p", "%d/%m/%Y %H:%M", "%Y-%m-%d %H:%M:%S"):
         try:
-            return datetime.strptime(s.strip(), fmt).replace(tzinfo=timezone.utc)
+            dt_local = datetime.strptime(s.strip(), fmt).replace(tzinfo=BST)
+            return dt_local.astimezone(timezone.utc)
         except ValueError:
             pass
     return datetime.min.replace(tzinfo=timezone.utc)
@@ -208,14 +213,21 @@ def get_live_statuses_html(html: str) -> dict:
 
 
 def get_live_statuses(html: str) -> dict:
+    """
+    Use AJAX only — the HTML table only contains the currently-visible page
+    (~10 rows) because bablands uses server-side DataTables pagination.
+    Falling back to HTML would silently drop all rows on pages 2+.
+    If AJAX fails, return empty dict and let the caller preserve old data.
+    """
     table_id, nonce = extract_wdt_config(html)
     print(f"  wpDataTables config: table_id={table_id}, nonce={nonce}")
-    if table_id:
-        statuses = get_live_statuses_ajax(table_id, nonce)
-        if statuses:
-            return statuses
-        print("  AJAX empty, falling back to HTML", file=sys.stderr)
-    return get_live_statuses_html(html)
+    if not table_id:
+        print("  Could not find table_id in page — cannot fetch statuses", file=sys.stderr)
+        return {}
+    statuses = get_live_statuses_ajax(table_id, nonce)
+    if not statuses:
+        print("  AJAX returned no rows — NOT falling back to HTML (would only get ~10 rows)", file=sys.stderr)
+    return statuses
 
 
 def load_coords() -> dict:
@@ -228,7 +240,11 @@ def load_coords() -> dict:
 
 
 def load_existing_statuses() -> dict:
-    """Load previously saved statuses from data.json to preserve on scrape failure."""
+    """
+    Load ALL previously saved statuses from data.json.
+    Called when scrape fails so we preserve the last known state exactly,
+    including unknown — better to show stale data than wipe to unknown.
+    """
     if not OUTPUT_FILE.exists():
         return {}
     try:
@@ -237,7 +253,6 @@ def load_existing_statuses() -> dict:
         return {
             normalise(f["name"]): {"status": f["status"], "reported_at": f.get("reported_at")}
             for f in data.get("fountains", [])
-            if f.get("status") and f["status"] != "unknown"
         }
     except Exception:
         return {}
