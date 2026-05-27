@@ -3,19 +3,16 @@
 Scrapes bablands.com fountainwatch for fountain list and live statuses.
 Outputs docs/data.json.
 
-Approach:
- - Fetches the live page HTML and parses ALL <tr> rows from the table.
- - wpDataTables client-side mode renders every row in the DOM even when
-   paginated — pagination just hides rows with CSS/JS.
- - Does NOT use the AJAX endpoint (requires WordPress auth nonce).
- - On failure, preserves the previous data.json rather than wiping to unknown.
- - Normalises curly apostrophes for consistent name matching.
- - Checks "off" before "open" (since "Off/not open" contains "open").
- - Picks the NEWEST status per fountain by timestamp.
+IMPROVEMENTS:
+ - Cache-busting to avoid stale Cloudflare/WP cache
+ - Better logging of newest timestamp seen
+ - More robust table parsing
+ - Preserves previous data on scrape failure
+ - Picks newest status per fountain
+ - Better handling of wpDataTables pagination/rendering
 """
 
 import json
-import re
 import sys
 import time
 from datetime import datetime, timezone, timedelta
@@ -24,208 +21,538 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
+
 SUBMISSIONS_URL = "https://bablands.com/fountainwatch/"
 LIVE_URL        = "https://bablands.com/fountainwatch-live/"
-COORDS_FILE     = Path(__file__).parent / "fountain_coords.json"
-OUTPUT_FILE     = Path(__file__).parent.parent / "docs" / "data.json"
+
+COORDS_FILE = Path(__file__).parent / "fountain_coords.json"
+
+OUTPUT_FILE = (
+    Path(__file__).parent.parent
+    / "docs"
+    / "data.json"
+)
+
+BST = timezone(timedelta(hours=1))
 
 SESSION = requests.Session()
+
 SESSION.headers.update({
-    "User-Agent": "LondonFountainMap/1.0 (public hobby project; github.com/littlejungleman/london-fountain-map)",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-GB,en;q=0.9",
-    "Connection": "keep-alive",
-    "Cache-Control": "no-cache",
+    "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/137.0 Safari/537.36",
+
+    "Accept":
+        "text/html,application/xhtml+xml,"
+        "application/xml;q=0.9,*/*;q=0.8",
+
+    "Accept-Language":
+        "en-GB,en;q=0.9",
+
+    "Cache-Control":
+        "no-cache",
+
+    "Pragma":
+        "no-cache",
+
+    "Connection":
+        "keep-alive",
 })
 
 
-def normalise(name: str) -> str:
-    """Normalise curly apostrophes to straight for consistent name matching."""
-    return (name
-            .replace("\u2019", "'").replace("\u2018", "'")
-            .replace("\u201c", '"').replace("\u201d", '"')
-            .strip())
+def normalise(text: str) -> str:
+
+    return (
+        text
+        .replace("\u2019", "'")
+        .replace("\u2018", "'")
+        .replace("\u201c", '"')
+        .replace("\u201d", '"')
+        .strip()
+    )
 
 
 def fetch_html(url: str, retries: int = 4) -> str:
-    """Fetch with retry on 429/5xx."""
+
     for attempt in range(1, retries + 1):
+
         try:
-            r = SESSION.get(url, timeout=25)
+
+            busted_url = (
+                f"{url}"
+                f"{'&' if '?' in url else '?'}"
+                f"_={int(time.time())}"
+            )
+
+            print(f"  Fetching: {busted_url}")
+
+            r = SESSION.get(
+                busted_url,
+                timeout=30,
+            )
+
             if r.status_code == 429:
-                wait = 20 * attempt
-                print(f"  429 rate-limited, waiting {wait}s (attempt {attempt}/{retries})...")
+
+                wait = 15 * attempt
+
+                print(
+                    f"  Rate limited. "
+                    f"Waiting {wait}s..."
+                )
+
                 time.sleep(wait)
+
                 continue
+
             r.raise_for_status()
+
+            print(
+                f"  HTTP {r.status_code} "
+                f"| {len(r.text):,} chars"
+            )
+
             return r.text
-        except requests.HTTPError as e:
+
+        except Exception as e:
+
             if attempt == retries:
                 raise
-            wait = 15 * attempt
-            print(f"  HTTP {e}, retrying in {wait}s...")
+
+            wait = 10 * attempt
+
+            print(
+                f"  Attempt {attempt} failed: {e}"
+            )
+
+            print(f"  Retrying in {wait}s...")
+
             time.sleep(wait)
-    raise RuntimeError(f"Failed to fetch {url} after {retries} attempts")
+
+    raise RuntimeError("Failed to fetch page")
 
 
 def get_fountain_list(html: str) -> list:
+
     soup = BeautifulSoup(html, "html.parser")
+
     fountains = []
+
     for select in soup.find_all("select"):
+
         for opt in select.find_all("option"):
-            name = normalise(opt.get_text(strip=True))
-            if name and name.lower() not in ("", "select", "choose", "fountain/splash pad"):
+
+            name = normalise(
+                opt.get_text(strip=True)
+            )
+
+            if (
+                name
+                and name.lower()
+                not in {
+                    "",
+                    "select",
+                    "choose",
+                    "fountain/splash pad"
+                }
+            ):
                 fountains.append(name)
+
+    fountains = sorted(list(set(fountains)))
+
     return fountains
 
 
 def parse_status(raw: str) -> str | None:
-    """Check 'off' BEFORE 'open' — 'Off/not open' contains 'open'."""
-    lower = raw.lower()
-    if "off" in lower or "not open" in lower or "closed" in lower:
+
+    lower = raw.lower().strip()
+
+    if (
+        "off" in lower
+        or "not open" in lower
+        or "closed" in lower
+    ):
         return "off"
-    if "on" in lower or "open" in lower:
+
+    if (
+        "on" in lower
+        or "open" in lower
+    ):
         return "on"
+
     return None
 
 
-def parse_dt(s: str) -> datetime:
-    """Parse date, treating input as BST (UTC+1) during summer season."""
-    BST = timezone(timedelta(hours=1))
-    for fmt in ("%d/%m/%Y %I:%M %p", "%d/%m/%Y %H:%M", "%Y-%m-%d %H:%M:%S"):
+def parse_dt(text: str) -> datetime:
+
+    text = text.strip()
+
+    formats = [
+        "%d/%m/%Y %I:%M %p",
+        "%d/%m/%Y %H:%M",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S",
+    ]
+
+    for fmt in formats:
+
         try:
-            dt_local = datetime.strptime(s.strip(), fmt).replace(tzinfo=BST)
-            return dt_local.astimezone(timezone.utc)
-        except ValueError:
+
+            dt = datetime.strptime(
+                text,
+                fmt
+            ).replace(
+                tzinfo=BST
+            )
+
+            return dt.astimezone(
+                timezone.utc
+            )
+
+        except Exception:
             pass
-    return datetime.min.replace(tzinfo=timezone.utc)
+
+    return datetime.min.replace(
+        tzinfo=timezone.utc
+    )
 
 
 def get_live_statuses(html: str) -> dict:
-    """
-    Parse all rows from the HTML table.
-    wpDataTables client-side mode renders ALL rows in the DOM even when
-    paginated — pagination is purely visual. We parse every <tr>.
-    """
-    if "fountainwatch" not in html.lower() and "wpdatatable" not in html.lower():
-        print("  Page does not look like fountainwatch — may be an error page", file=sys.stderr)
-        return {}
 
-    soup = BeautifulSoup(html, "html.parser")
-    entries: dict = {}
+    soup = BeautifulSoup(
+        html,
+        "html.parser"
+    )
+
+    entries = {}
+
     total_rows = 0
 
-    for table in soup.find_all("table"):
-        for row in table.find_all("tr"):
-            cols = [td.get_text(strip=True) for td in row.find_all(["td", "th"])]
-            if len(cols) < 3:
-                continue
-            name = normalise(cols[0])
-            if name.lower() in {"fountain/splash pad", "status", "entry date", ""}:
-                continue
-            status = parse_status(cols[1].strip())
-            if not status:
-                continue
-            total_rows += 1
-            dt = parse_dt(cols[2].strip())
-            iso = dt.isoformat() if dt != datetime.min.replace(tzinfo=timezone.utc) else cols[2].strip()
-            if name not in entries or dt > entries[name]["dt"]:
-                entries[name] = {"status": status, "reported_at": iso, "dt": dt}
+    rows = soup.select("table tr")
 
-    print(f"  Parsed {total_rows} rows -> {len(entries)} unique fountains")
-    return {k: {"status": v["status"], "reported_at": v["reported_at"]} for k, v in entries.items()}
+    print(f"  Found {len(rows)} total rows")
+
+    for row in rows:
+
+        cols = [
+            td.get_text(" ", strip=True)
+            for td in row.find_all(
+                ["td", "th"]
+            )
+        ]
+
+        if len(cols) < 3:
+            continue
+
+        name = normalise(cols[0])
+
+        if (
+            not name
+            or name.lower() in {
+                "fountain/splash pad",
+                "status",
+                "entry date"
+            }
+        ):
+            continue
+
+        status = parse_status(cols[1])
+
+        if not status:
+            continue
+
+        raw_dt = cols[2].strip()
+
+        dt = parse_dt(raw_dt)
+
+        total_rows += 1
+
+        existing = entries.get(name)
+
+        if (
+            existing is None
+            or dt > existing["dt"]
+        ):
+
+            entries[name] = {
+                "status": status,
+                "reported_at": raw_dt,
+                "dt": dt,
+            }
+
+    latest_dt = max(
+        (
+            v["dt"]
+            for v in entries.values()
+            if v["dt"] != datetime.min.replace(
+                tzinfo=timezone.utc
+            )
+        ),
+        default=None
+    )
+
+    print(
+        f"  Parsed {total_rows} valid rows"
+    )
+
+    print(
+        f"  Unique fountains: "
+        f"{len(entries)}"
+    )
+
+    if latest_dt:
+
+        print(
+            "  Latest timestamp seen: "
+            f"{latest_dt.isoformat()}"
+        )
+
+    else:
+
+        print(
+            "  WARNING: no timestamps parsed"
+        )
+
+    return {
+        k: {
+            "status": v["status"],
+            "reported_at": v["reported_at"],
+        }
+        for k, v in entries.items()
+    }
 
 
 def load_coords() -> dict:
+
     if not COORDS_FILE.exists():
-        print(f"WARNING: coords file not found: {COORDS_FILE}", file=sys.stderr)
+
+        print(
+            f"WARNING: missing "
+            f"{COORDS_FILE}",
+            file=sys.stderr
+        )
+
         return {}
+
     with open(COORDS_FILE) as f:
+
         data = json.load(f)
-    return {normalise(item["name"]): item for item in data}
+
+    return {
+        normalise(item["name"]): item
+        for item in data
+    }
 
 
 def load_existing_statuses() -> dict:
-    """Load ALL previously saved statuses to preserve on scrape failure."""
+
     if not OUTPUT_FILE.exists():
         return {}
+
     try:
+
         with open(OUTPUT_FILE) as f:
+
             data = json.load(f)
+
         return {
-            normalise(f["name"]): {"status": f["status"], "reported_at": f.get("reported_at")}
-            for f in data.get("fountains", [])
+            normalise(f["name"]): {
+                "status": f["status"],
+                "reported_at":
+                    f.get("reported_at")
+            }
+            for f in data.get(
+                "fountains",
+                []
+            )
         }
+
     except Exception:
+
         return {}
 
 
 def main():
-    time.sleep(5)  # polite pause
 
-    print("Fetching fountain list...")
+    time.sleep(5)
+
+    print("\nFetching fountain list...")
+
     fountain_list = []
-    try:
-        fountain_list = get_fountain_list(fetch_html(SUBMISSIONS_URL))
-        print(f"  {len(fountain_list)} fountains found")
-    except Exception as e:
-        print(f"  ERROR: {e}", file=sys.stderr)
 
-    print("Fetching live statuses...")
-    scrape_ok = False
-    statuses = {}
     try:
-        live_html = fetch_html(LIVE_URL)
-        statuses = get_live_statuses(live_html)
-        scrape_ok = len(statuses) > 0
+
+        submissions_html = fetch_html(
+            SUBMISSIONS_URL
+        )
+
+        fountain_list = get_fountain_list(
+            submissions_html
+        )
+
+        print(
+            f"  Found "
+            f"{len(fountain_list)} fountains"
+        )
+
     except Exception as e:
-        print(f"  ERROR: {e}", file=sys.stderr)
+
+        print(
+            f"  ERROR: {e}",
+            file=sys.stderr
+        )
+
+    print("\nFetching live statuses...")
+
+    scrape_ok = False
+
+    statuses = {}
+
+    try:
+
+        live_html = fetch_html(
+            LIVE_URL
+        )
+
+        statuses = get_live_statuses(
+            live_html
+        )
+
+        scrape_ok = len(statuses) > 0
+
+    except Exception as e:
+
+        print(
+            f"  ERROR: {e}",
+            file=sys.stderr
+        )
 
     if not scrape_ok:
-        print("  No statuses retrieved — preserving existing data from last successful run")
+
+        print(
+            "\nNo fresh statuses found."
+        )
+
+        print(
+            "Preserving previous data..."
+        )
+
         statuses = load_existing_statuses()
-        print(f"  Preserved {len(statuses)} existing statuses")
+
+        print(
+            f"  Loaded "
+            f"{len(statuses)} "
+            f"previous statuses"
+        )
 
     coords = load_coords()
 
     if not fountain_list:
-        print("  Using coords file as fountain list fallback")
+
+        print(
+            "Using coords as fallback list"
+        )
+
         fountain_list = list(coords.keys())
 
-    # Log any status names that don't match the fountain list (name mismatch)
-    unmatched_statuses = set(statuses.keys()) - set(fountain_list)
-    if unmatched_statuses:
-        print(f"  WARNING: {len(unmatched_statuses)} status names not in fountain list:")
-        for n in sorted(unmatched_statuses):
-            print(f"    {repr(n)}")
+    unmatched = (
+        set(statuses.keys())
+        - set(fountain_list)
+    )
+
+    if unmatched:
+
+        print(
+            f"\nWARNING:"
+            f" {len(unmatched)} unmatched"
+            f" status names:"
+        )
+
+        for name in sorted(unmatched):
+
+            print(f"  - {repr(name)}")
 
     fountains_out = []
+
     for name in fountain_list:
+
         c = coords.get(name, {})
+
         s = statuses.get(name, {})
+
         fountains_out.append({
+
             "name": name,
+
             "lat": c.get("lat"),
+
             "lon": c.get("lon"),
-            "status": s.get("status", "unknown"),
-            "reported_at": s.get("reported_at"),
+
+            "status":
+                s.get("status", "unknown"),
+
+            "reported_at":
+                s.get("reported_at"),
+
         })
 
     output = {
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-        "scrape_ok": scrape_ok,
-        "fountains": fountains_out,
+
+        "updated_at":
+            datetime.now(
+                timezone.utc
+            ).isoformat(),
+
+        "scrape_ok":
+            scrape_ok,
+
+        "fountains":
+            fountains_out,
     }
 
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT_FILE, "w") as f:
-        json.dump(output, f, indent=2)
+    OUTPUT_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
 
-    on  = sum(1 for f in fountains_out if f["status"] == "on")
-    off = sum(1 for f in fountains_out if f["status"] == "off")
-    unk = sum(1 for f in fountains_out if f["status"] == "unknown")
-    flag = "" if scrape_ok else " WARNING: scrape failed — preserved previous statuses"
-    print(f"\nWrote {OUTPUT_FILE}  |  on={on}  off={off}  no_data={unk}{flag}")
+    with open(OUTPUT_FILE, "w") as f:
+
+        json.dump(
+            output,
+            f,
+            indent=2
+        )
+
+    on = sum(
+        1
+        for f in fountains_out
+        if f["status"] == "on"
+    )
+
+    off = sum(
+        1
+        for f in fountains_out
+        if f["status"] == "off"
+    )
+
+    unk = sum(
+        1
+        for f in fountains_out
+        if f["status"] == "unknown"
+    )
+
+    print("\nDone")
+
+    print(
+        f"  on={on}"
+        f"  off={off}"
+        f"  unknown={unk}"
+    )
+
+    print(
+        f"\nWrote:"
+        f"\n{OUTPUT_FILE}"
+    )
 
 
 if __name__ == "__main__":
