@@ -3,10 +3,12 @@
 Scrapes bablands.com fountainwatch for fountain list and live statuses.
 Outputs docs/data.json.
 
-Key behaviours:
- - Retries on 429 with exponential backoff (up to 3 attempts).
- - If scrape fails entirely, PRESERVES existing statuses from data.json
-   rather than overwriting everything with "unknown".
+Approach:
+ - Fetches the live page HTML and parses ALL <tr> rows from the table.
+ - wpDataTables client-side mode renders every row in the DOM even when
+   paginated — pagination just hides rows with CSS/JS.
+ - Does NOT use the AJAX endpoint (requires WordPress auth nonce).
+ - On failure, preserves the previous data.json rather than wiping to unknown.
  - Normalises curly apostrophes for consistent name matching.
  - Checks "off" before "open" (since "Off/not open" contains "open").
  - Picks the NEWEST status per fountain by timestamp.
@@ -29,8 +31,8 @@ OUTPUT_FILE     = Path(__file__).parent.parent / "docs" / "data.json"
 
 SESSION = requests.Session()
 SESSION.headers.update({
-    "User-Agent": "LondonFountainMap/1.0 (public hobby project scraping fountainwatch data; contact via github.com/littlejungleman/london-fountain-map; runs hourly)",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "User-Agent": "LondonFountainMap/1.0 (public hobby project; github.com/littlejungleman/london-fountain-map)",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-GB,en;q=0.9",
     "Connection": "keep-alive",
     "Cache-Control": "no-cache",
@@ -38,6 +40,7 @@ SESSION.headers.update({
 
 
 def normalise(name: str) -> str:
+    """Normalise curly apostrophes to straight for consistent name matching."""
     return (name
             .replace("\u2019", "'").replace("\u2018", "'")
             .replace("\u201c", '"').replace("\u201d", '"')
@@ -45,12 +48,12 @@ def normalise(name: str) -> str:
 
 
 def fetch_html(url: str, retries: int = 4) -> str:
-    """Fetch URL with retry on 429/5xx. Waits progressively longer between attempts."""
+    """Fetch with retry on 429/5xx."""
     for attempt in range(1, retries + 1):
         try:
             r = SESSION.get(url, timeout=25)
             if r.status_code == 429:
-                wait = 20 * attempt  # 20s, 40s, 60s, 80s
+                wait = 20 * attempt
                 print(f"  429 rate-limited, waiting {wait}s (attempt {attempt}/{retries})...")
                 time.sleep(wait)
                 continue
@@ -87,9 +90,7 @@ def parse_status(raw: str) -> str | None:
 
 
 def parse_dt(s: str) -> datetime:
-    # bablands.com is a UK site — times are UK local (BST=UTC+1 in summer, GMT in winter).
-    # We always assume BST (UTC+1) during the splash pad season (Apr-Oct).
-    # Storing as UTC means the browser will display correctly in any timezone.
+    """Parse date, treating input as BST (UTC+1) during summer season."""
     BST = timezone(timedelta(hours=1))
     for fmt in ("%d/%m/%Y %I:%M %p", "%d/%m/%Y %H:%M", "%Y-%m-%d %H:%M:%S"):
         try:
@@ -100,136 +101,20 @@ def parse_dt(s: str) -> datetime:
     return datetime.min.replace(tzinfo=timezone.utc)
 
 
-def extract_wdt_config(html: str) -> tuple:
-    table_id, nonce = None, None
+def get_live_statuses(html: str) -> dict:
+    """
+    Parse all rows from the HTML table.
+    wpDataTables client-side mode renders ALL rows in the DOM even when
+    paginated — pagination is purely visual. We parse every <tr>.
+    """
+    if "fountainwatch" not in html.lower() and "wpdatatable" not in html.lower():
+        print("  Page does not look like fountainwatch — may be an error page", file=sys.stderr)
+        return {}
 
-    # tableWpId is the confirmed field name on bablands.com
-    id_patterns = [
-        r'"tableWpId"\s*:\s*(\d+)',
-        r'"table_id"\s*:\s*"?(\d+)"?',
-        r'data-table-id="(\d+)"',
-        r'data-wpdtid="(\d+)"',
-        r'wpdatatable_(\d+)',
-        r'wdt-table-id-(\d+)',
-    ]
-    for pat in id_patterns:
-        m = re.search(pat, html, re.IGNORECASE)
-        if m:
-            table_id = m.group(1)
-            ctx_start = max(0, m.start() - 100)
-            ctx_end   = min(len(html), m.end() + 300)
-            print(f"  Found table_id={table_id}")
-            print(f"  Context: {html[ctx_start:ctx_end]!r}")
-            break
-
-    # Search for any nonce value near wpdatatable config
-    nonce_patterns = [
-        r'"wdtNonce"\s*:\s*"([^"]+)"',
-        r'"nonce"\s*:\s*"([a-f0-9]{8,12})"',
-        r'"_wpnonce"\s*:\s*"([^"]+)"',
-        r'"ajaxNonce"\s*:\s*"([^"]+)"',
-    ]
-    for pat in nonce_patterns:
-        m = re.search(pat, html)
-        if m:
-            nonce = m.group(1)
-            print(f"  Found nonce={nonce!r}")
-            break
-
-    if not nonce:
-        # Broad fallback: any 10-char hex string labelled as nonce
-        m = re.search(r'nonce[^a-zA-Z][^"]*"([a-f0-9]{10})"', html, re.IGNORECASE)
-        if m:
-            nonce = m.group(1)
-            print(f"  Found nonce via broad search: {nonce!r}")
-
-    if not table_id:
-        for kw in ['wpdatatable', 'wpdt', 'wdt-table']:
-            idx = html.lower().find(kw)
-            if idx >= 0:
-                print(f"  Found {kw!r} at {idx}: {html[max(0,idx-20):idx+100]!r}")
-                break
-
-    return table_id, nonce
-
-
-def get_live_statuses_ajax(table_id: str, nonce: str | None) -> dict:
-    ajax_url = "https://bablands.com/wp-admin/admin-ajax.php"
-    entries: dict = {}
-    page_size, start, total, draw = 100, 0, None, 1
-
-    SESSION.headers.update({
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "X-Requested-With": "XMLHttpRequest",
-        "Referer": LIVE_URL,
-    })
-
-    while True:
-        payload = {
-            "action": "get_wdtable", "table_id": table_id,
-            "draw": str(draw), "start": str(start), "length": str(page_size),
-            "search[value]": "", "search[regex]": "false",
-            "order[0][column]": "2", "order[0][dir]": "desc",
-        }
-        if nonce:
-            payload["wdtNonce"] = nonce
-
-        try:
-            r = SESSION.post(ajax_url, data=payload, timeout=25)
-            if r.status_code == 429:
-                print(f"  AJAX 429, waiting 15s...", file=sys.stderr)
-                time.sleep(15)
-                continue
-            if r.status_code != 200:
-                print(f"  AJAX HTTP {r.status_code}", file=sys.stderr)
-                break
-            data = r.json()
-        except Exception as e:
-            print(f"  AJAX failed: {e}", file=sys.stderr)
-            break
-
-        if total is None:
-            total = data.get("recordsTotal", 0)
-            print(f"  AJAX: {total} total rows")
-
-        rows = data.get("data", [])
-        if not rows:
-            break
-
-        for row in rows:
-            if isinstance(row, list) and len(row) >= 3:
-                raw_name, raw_status, raw_date = row[0], row[1], row[2]
-            elif isinstance(row, dict):
-                vals = list(row.values())
-                if len(vals) < 3:
-                    continue
-                raw_name, raw_status, raw_date = vals[0], vals[1], vals[2]
-            else:
-                continue
-
-            name = normalise(re.sub(r"<[^>]+>", "", str(raw_name)).strip())
-            status = parse_status(re.sub(r"<[^>]+>", "", str(raw_status)).strip())
-            raw_date_clean = re.sub(r"<[^>]+>", "", str(raw_date)).strip()
-            if not status or not name:
-                continue
-            dt = parse_dt(raw_date_clean)
-            iso = dt.isoformat() if dt != datetime.min.replace(tzinfo=timezone.utc) else raw_date_clean
-            if name not in entries or dt > entries[name]["dt"]:
-                entries[name] = {"status": status, "reported_at": iso, "dt": dt}
-
-        start += len(rows)
-        draw += 1
-        print(f"  AJAX: fetched {start}/{total} rows, {len(entries)} unique")
-        if total is not None and start >= total:
-            break
-        time.sleep(0.5)
-
-    return {k: {"status": v["status"], "reported_at": v["reported_at"]} for k, v in entries.items()}
-
-
-def get_live_statuses_html(html: str) -> dict:
     soup = BeautifulSoup(html, "html.parser")
     entries: dict = {}
+    total_rows = 0
+
     for table in soup.find_all("table"):
         for row in table.find_all("tr"):
             cols = [td.get_text(strip=True) for td in row.find_all(["td", "th"])]
@@ -241,36 +126,14 @@ def get_live_statuses_html(html: str) -> dict:
             status = parse_status(cols[1].strip())
             if not status:
                 continue
+            total_rows += 1
             dt = parse_dt(cols[2].strip())
             iso = dt.isoformat() if dt != datetime.min.replace(tzinfo=timezone.utc) else cols[2].strip()
             if name not in entries or dt > entries[name]["dt"]:
                 entries[name] = {"status": status, "reported_at": iso, "dt": dt}
-    if entries:
-        print(f"  HTML fallback: {len(entries)} unique fountains")
+
+    print(f"  Parsed {total_rows} rows -> {len(entries)} unique fountains")
     return {k: {"status": v["status"], "reported_at": v["reported_at"]} for k, v in entries.items()}
-
-
-def get_live_statuses(html: str) -> dict:
-    """
-    Use AJAX only — the HTML table only contains the currently-visible page
-    (~10 rows) because bablands uses server-side DataTables pagination.
-    If AJAX fails, return empty dict and let the caller preserve old data.
-    """
-    # Sanity check: if we got a rate-limit or error page, bail out
-    if "fountainwatch" not in html.lower() and "wpdatatable" not in html.lower():
-        print("  Page doesn't look like the fountainwatch page — may be an error page", file=sys.stderr)
-        return {}
-
-    table_id, nonce = extract_wdt_config(html)
-    print(f"  wpDataTables config: table_id={table_id}, nonce={nonce}")
-    if not table_id:
-        # bablands.com fountainwatch table is always ID 1
-        print("  Could not extract table_id from JS — using hardcoded fallback ID=1", file=sys.stderr)
-        table_id = "1"
-    statuses = get_live_statuses_ajax(table_id, nonce)
-    if not statuses:
-        print("  AJAX returned no rows", file=sys.stderr)
-    return statuses
 
 
 def load_coords() -> dict:
@@ -283,11 +146,7 @@ def load_coords() -> dict:
 
 
 def load_existing_statuses() -> dict:
-    """
-    Load ALL previously saved statuses from data.json.
-    Called when scrape fails so we preserve the last known state exactly,
-    including unknown — better to show stale data than wipe to unknown.
-    """
+    """Load ALL previously saved statuses to preserve on scrape failure."""
     if not OUTPUT_FILE.exists():
         return {}
     try:
@@ -302,8 +161,7 @@ def load_existing_statuses() -> dict:
 
 
 def main():
-    # Polite delay before starting — we are a guest on their server
-    time.sleep(5)
+    time.sleep(5)  # polite pause
 
     print("Fetching fountain list...")
     fountain_list = []
@@ -319,12 +177,10 @@ def main():
     try:
         live_html = fetch_html(LIVE_URL)
         statuses = get_live_statuses(live_html)
-        print(f"  {len(statuses)} fountains with status")
         scrape_ok = len(statuses) > 0
     except Exception as e:
         print(f"  ERROR: {e}", file=sys.stderr)
 
-    # If scrape got 0 statuses for any reason, preserve existing data
     if not scrape_ok:
         print("  No statuses retrieved — preserving existing data from last successful run")
         statuses = load_existing_statuses()
@@ -361,7 +217,7 @@ def main():
     on  = sum(1 for f in fountains_out if f["status"] == "on")
     off = sum(1 for f in fountains_out if f["status"] == "off")
     unk = sum(1 for f in fountains_out if f["status"] == "unknown")
-    flag = "" if scrape_ok else " ⚠️ SCRAPE FAILED — preserved previous statuses"
+    flag = "" if scrape_ok else " WARNING: scrape failed — preserved previous statuses"
     print(f"\nWrote {OUTPUT_FILE}  |  on={on}  off={off}  no_data={unk}{flag}")
 
 
