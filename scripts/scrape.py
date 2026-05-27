@@ -106,6 +106,7 @@ def extract_wdt_config(html: str) -> tuple:
     # Try many patterns — wpDataTables embeds the table ID in various ways
     # depending on version and table type
     id_patterns = [
+        r'"tableWpId"\s*:\s*(\d+)',           # confirmed pattern from bablands.com
         r'"table_id"\s*:\s*"?(\d+)"?',       # JS config object
         r'wpdatatable_id["\s]*:["\s]*(\d+)',  # older var name
         r'tableId["\s]*:["\s]*(\d+)',         # camelCase
@@ -115,21 +116,26 @@ def extract_wdt_config(html: str) -> tuple:
         r'#wdt-table-id-(\d+)',               # jQuery selector in JS
         r'wpDataTablesGrid\[(\d+)\]',         # grid tables
         r'wdt-table-id-(\d+)',                # class/id fragment
-        r'"id"\s*:\s*(\d+)[,}]',             # generic id in JS object near wpdatatable
     ]
     for pat in id_patterns:
         m = re.search(pat, html, re.IGNORECASE)
         if m:
             table_id = m.group(1)
             print(f"  Found table_id={table_id} via pattern: {pat}")
+            # Print surrounding context to help find nonce
+            start = max(0, m.start() - 200)
+            end   = min(len(html), m.end() + 200)
+            print(f"  Context: {html[start:end]!r}")
             break
 
     # Nonce patterns
     nonce_patterns = [
+        r'"wdtNonce"\s*:\s*"([^"]+)"',        # wpDataTables specific nonce field
         r'"nonce"\s*:\s*"([a-f0-9]{10})"',
-        r'wdtNonce["\s]*:["\s]*"([a-f0-9]{10})"',
+        r'wdtNonce["\s]*:["\s]*"([^"]+)"',
         r'"nonce"\s*:\s*"([^"]{6,20})"',
         r"'nonce'\s*:\s*'([^']{6,20})'",
+        r'"_wpnonce"\s*:\s*"([^"]+)"',        # standard WP nonce
     ]
     for pat in nonce_patterns:
         m = re.search(pat, html)
@@ -260,15 +266,9 @@ def get_live_statuses(html: str) -> dict:
     table_id, nonce = extract_wdt_config(html)
     print(f"  wpDataTables config: table_id={table_id}, nonce={nonce}")
     if not table_id:
-        print("  Could not find table_id in page JS — trying hardcoded IDs 1-5", file=sys.stderr)
-        for try_id in ["1", "2", "3", "4", "5"]:
-            print(f"  Trying table_id={try_id}...")
-            result = get_live_statuses_ajax(try_id, nonce)
-            if result:
-                print(f"  Success with table_id={try_id} — add this as HARDCODED_TABLE_ID in scrape.py")
-                return result
-        print("  All table_id attempts failed, falling back to HTML", file=sys.stderr)
-        return get_live_statuses_html(html)
+        # bablands.com fountainwatch table is always ID 1
+        print("  Could not extract table_id from JS — using hardcoded fallback ID=1", file=sys.stderr)
+        table_id = "1"
     statuses = get_live_statuses_ajax(table_id, nonce)
     if not statuses:
         print("  AJAX returned no rows", file=sys.stderr)
