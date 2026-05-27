@@ -1,6 +1,5 @@
 {
-  "updated_at": "2026-05-27T17:00:56.784249+00:00",
-  "scrape_ok": true,
+  "updated_at": "2026-05-27T17:07:31.016637",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -496,13 +495,6 @@
       "name": "Russell Square Gardens fountain, Bloomsbury",
       "lat": 51.52175,
       "lon": -0.12589,
-      "status": "unknown",
-      "reported_at": null
-    },
-    {
-      "name": "Select fountain or splash pad",
-      "lat": null,
-      "lon": null,
       "status": "unknown",
       "reported_at": null
     },
