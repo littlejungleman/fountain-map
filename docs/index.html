@@ -655,15 +655,6 @@ function renderMarkers(){
       return;
     }
 
-    const updated =
-  f.last_status_change ||
-  f.last_report ||
-  f.lastUpdate ||
-  f.last_updated ||
-  f.updated_at ||
-  f.updated ||
-  '';
-
     const marker = L.marker(
       [Number(f.lat), Number(f.lon)],
       {
@@ -694,11 +685,11 @@ function renderMarkers(){
   </div>
 
   ${
-    updated
+    f.last_updated
       ? `
         <div class="popup-updated">
           Last updated:
-          ${updated}
+          ${f.last_updated}
         </div>
       `
       : ''
