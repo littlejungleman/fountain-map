@@ -127,6 +127,8 @@ def get_live_statuses(html: str) -> dict:
                 continue
             status = parse_status(cols[1].strip())
             if not status:
+                # Row has unrecognised/blank status - skip but log it
+                print(f"  Skipping row with unrecognised status {cols[1]!r} for {name!r}")
                 continue
             total_rows += 1
             dt = parse_dt(cols[2].strip())
