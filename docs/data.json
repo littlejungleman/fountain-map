@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-27T08:00:50.994031+00:00",
+  "updated_at": "2026-05-27T09:01:36.126214+00:00",
   "scrape_ok": true,
   "fountains": [
     {
@@ -98,7 +98,7 @@
       "lat": 51.5567,
       "lon": -0.15753,
       "status": "off",
-      "reported_at": "2026-05-26T21:53:00+00:00"
+      "reported_at": "2026-05-27T06:39:00+00:00"
     },
     {
       "name": "Queen's Park paddling pool",
@@ -139,8 +139,8 @@
       "name": "Swiss Cottage Open Space splash pad, Swiss Cottage",
       "lat": 51.54306,
       "lon": -0.17301,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "2026-05-27T05:50:00+00:00"
     },
     {
       "name": "Kilburn Grange Park splash pad",
