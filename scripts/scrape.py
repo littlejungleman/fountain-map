@@ -103,53 +103,51 @@ def parse_dt(s: str) -> datetime:
 def extract_wdt_config(html: str) -> tuple:
     table_id, nonce = None, None
 
-    # Try many patterns — wpDataTables embeds the table ID in various ways
-    # depending on version and table type
+    # tableWpId is the confirmed field name on bablands.com
     id_patterns = [
-        r'"tableWpId"\s*:\s*(\d+)',           # confirmed pattern from bablands.com
-        r'"table_id"\s*:\s*"?(\d+)"?',       # JS config object
-        r'wpdatatable_id["\s]*:["\s]*(\d+)',  # older var name
-        r'tableId["\s]*:["\s]*(\d+)',         # camelCase
-        r'data-table-id="(\d+)"',             # HTML data attribute
-        r'data-wpdtid="(\d+)"',               # wpdt-c div
-        r'wpdatatable_(\d+)',                  # table element ID
-        r'#wdt-table-id-(\d+)',               # jQuery selector in JS
-        r'wpDataTablesGrid\[(\d+)\]',         # grid tables
-        r'wdt-table-id-(\d+)',                # class/id fragment
+        r'"tableWpId"\s*:\s*(\d+)',
+        r'"table_id"\s*:\s*"?(\d+)"?',
+        r'data-table-id="(\d+)"',
+        r'data-wpdtid="(\d+)"',
+        r'wpdatatable_(\d+)',
+        r'wdt-table-id-(\d+)',
     ]
     for pat in id_patterns:
         m = re.search(pat, html, re.IGNORECASE)
         if m:
             table_id = m.group(1)
-            print(f"  Found table_id={table_id} via pattern: {pat}")
-            # Print surrounding context to help find nonce
-            start = max(0, m.start() - 200)
-            end   = min(len(html), m.end() + 200)
-            print(f"  Context: {html[start:end]!r}")
+            ctx_start = max(0, m.start() - 100)
+            ctx_end   = min(len(html), m.end() + 300)
+            print(f"  Found table_id={table_id}")
+            print(f"  Context: {html[ctx_start:ctx_end]!r}")
             break
 
-    # Nonce patterns
+    # Search for any nonce value near wpdatatable config
     nonce_patterns = [
-        r'"wdtNonce"\s*:\s*"([^"]+)"',        # wpDataTables specific nonce field
-        r'"nonce"\s*:\s*"([a-f0-9]{10})"',
-        r'wdtNonce["\s]*:["\s]*"([^"]+)"',
-        r'"nonce"\s*:\s*"([^"]{6,20})"',
-        r"'nonce'\s*:\s*'([^']{6,20})'",
-        r'"_wpnonce"\s*:\s*"([^"]+)"',        # standard WP nonce
+        r'"wdtNonce"\s*:\s*"([^"]+)"',
+        r'"nonce"\s*:\s*"([a-f0-9]{8,12})"',
+        r'"_wpnonce"\s*:\s*"([^"]+)"',
+        r'"ajaxNonce"\s*:\s*"([^"]+)"',
     ]
     for pat in nonce_patterns:
         m = re.search(pat, html)
         if m:
             nonce = m.group(1)
+            print(f"  Found nonce={nonce!r}")
             break
 
-    # If still no table_id, log a snippet to help diagnose
+    if not nonce:
+        # Broad fallback: any 10-char hex string labelled as nonce
+        m = re.search(r'nonce[^a-zA-Z][^"]*"([a-f0-9]{10})"', html, re.IGNORECASE)
+        if m:
+            nonce = m.group(1)
+            print(f"  Found nonce via broad search: {nonce!r}")
+
     if not table_id:
-        # Find any mention of wpdatatable in the page to help debug
-        for kw in ['wpdatatable', 'wpdt', 'wdt-table', 'datatables']:
+        for kw in ['wpdatatable', 'wpdt', 'wdt-table']:
             idx = html.lower().find(kw)
             if idx >= 0:
-                print(f"  Found '{kw}' at pos {idx}: {html[max(0,idx-20):idx+80]!r}")
+                print(f"  Found {kw!r} at {idx}: {html[max(0,idx-20):idx+100]!r}")
                 break
 
     return table_id, nonce
@@ -322,15 +320,15 @@ def main():
         live_html = fetch_html(LIVE_URL)
         statuses = get_live_statuses(live_html)
         print(f"  {len(statuses)} fountains with status")
-        scrape_ok = True
+        scrape_ok = len(statuses) > 0
     except Exception as e:
         print(f"  ERROR: {e}", file=sys.stderr)
 
-    # If scrape failed, preserve existing statuses instead of wiping to unknown
+    # If scrape got 0 statuses for any reason, preserve existing data
     if not scrape_ok:
-        print("  Scrape failed — preserving existing statuses from last successful run")
+        print("  No statuses retrieved — preserving existing data from last successful run")
         statuses = load_existing_statuses()
-        print(f"  Loaded {len(statuses)} existing statuses")
+        print(f"  Preserved {len(statuses)} existing statuses")
 
     coords = load_coords()
 
