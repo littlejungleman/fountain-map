@@ -35,7 +35,7 @@
   --text:#0f172a;
   --muted:#64748b;
 
-  --card:rgba(255,255,255,.82);
+  --card:rgba(255,255,255,.84);
 
   --shadow:
     0 10px 30px rgba(15,23,42,.10),
@@ -179,15 +179,6 @@ header{
   font-size:.92rem;
 
   outline:none;
-
-  box-shadow:
-    inset 0 0 0 1px rgba(148,163,184,.18);
-}
-
-#search:focus{
-  box-shadow:
-    0 0 0 3px rgba(56,189,248,.18),
-    inset 0 0 0 1px rgba(56,189,248,.4);
 }
 
 .filter-tabs{
@@ -357,6 +348,12 @@ header{
   height:100%;
 }
 
+/* IMPORTANT FIX */
+
+.leaflet-container{
+  background:#dbeafe !important;
+}
+
 .map-note{
   position:absolute;
 
@@ -392,7 +389,7 @@ header{
 }
 
 .pin:hover{
-  transform:scale(1.1);
+  transform:scale(1.08);
 }
 
 .pin svg{
@@ -403,18 +400,14 @@ header{
     drop-shadow(0 4px 8px rgba(0,0,0,.24));
 }
 
-/* POPUPS */
+/* POPUP */
 
 .leaflet-popup-content-wrapper{
   border-radius:18px !important;
-
-  box-shadow:
-    0 20px 40px rgba(15,23,42,.22) !important;
 }
 
 .popup-inner{
   min-width:180px;
-  padding:4px 2px;
 }
 
 .popup-name{
@@ -427,7 +420,6 @@ header{
 
 .popup-status{
   display:inline-flex;
-  align-items:center;
 
   padding:5px 12px;
 
@@ -452,21 +444,13 @@ header{
   color:#475569;
 }
 
-.popup-time{
-  margin-top:8px;
-
-  font-size:.72rem;
-
-  color:var(--muted);
-}
-
 /* LOADING */
 
 #loading{
   position:absolute;
   inset:0;
 
-  background:rgba(240,249,255,.84);
+  background:rgba(240,249,255,.82);
 
   display:flex;
   flex-direction:column;
@@ -494,14 +478,6 @@ header{
   }
 }
 
-#loading p{
-  margin-top:12px;
-
-  font-family:'Fredoka',sans-serif;
-
-  color:var(--water-dark);
-}
-
 /* MOBILE */
 
 @media (max-width:700px){
@@ -517,32 +493,21 @@ header{
   }
 
   .main-layout{
-    display:flex;
     flex-direction:column;
 
     height:auto;
-    min-height:auto;
   }
-
-  /* MAP FIRST */
 
   .map-wrap{
     order:1;
 
     width:100%;
 
-    height:58vh;
+    height:56vh;
     min-height:420px;
 
     flex:none;
   }
-
-  #map{
-    width:100%;
-    height:100%;
-  }
-
-  /* SIDEBAR SECOND */
 
   #sidebar{
     order:2;
@@ -562,15 +527,6 @@ header{
   #fountain-list{
     overflow:visible;
     max-height:none;
-  }
-
-  .stats-row{
-    padding-bottom:10px;
-  }
-
-  .map-note{
-    left:10px;
-    bottom:10px;
   }
 }
 
@@ -613,8 +569,6 @@ header{
 
 <div class="main-layout">
 
-  <!-- SIDEBAR -->
-
   <aside id="sidebar">
 
     <div class="sidebar-header">
@@ -630,30 +584,30 @@ header{
 
         <button
           class="filter-tab active-all"
-          onclick="setFilter('all', this)"
+          onclick="setFilter('all',this)"
         >
           All
         </button>
 
         <button
           class="filter-tab"
-          onclick="setFilter('on', this)"
+          onclick="setFilter('on',this)"
         >
           ✓ Open
         </button>
 
         <button
           class="filter-tab"
-          onclick="setFilter('off', this)"
+          onclick="setFilter('off',this)"
         >
           ✕ Closed
         </button>
 
         <button
           class="filter-tab"
-          onclick="setFilter('unknown', this)"
+          onclick="setFilter('unknown',this)"
         >
-          ? No data
+          – No data
         </button>
 
       </div>
@@ -683,8 +637,6 @@ header{
 
   </aside>
 
-  <!-- MAP -->
-
   <div class="map-wrap">
 
     <div id="map"></div>
@@ -696,8 +648,6 @@ header{
     <div id="loading">
 
       <div class="spinner"></div>
-
-      <p>Loading fountains…</p>
 
     </div>
 
@@ -732,21 +682,21 @@ function initMap(){
     position:'bottomright'
   }).addTo(map);
 
-  /* OPENFREEMAP BRIGHT */
+  /* WORKING FREE TILE SERVER */
 
   L.tileLayer(
-    'https://tiles.openfreemap.org/bright/{z}/{x}/{y}.png',
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     {
       attribution:
-        '&copy; OpenStreetMap contributors &copy; OpenFreeMap',
-      maxZoom:20
+        '&copy; OpenStreetMap contributors',
+      maxZoom:19
     }
   ).addTo(map);
 
   refreshMapSize();
 }
 
-/* MAP REFRESH */
+/* FIXES */
 
 function refreshMapSize(){
 
@@ -759,7 +709,22 @@ function refreshMapSize(){
   },500);
 }
 
-/* ESCAPE */
+window.addEventListener(
+  'resize',
+  refreshMapSize
+);
+
+window.addEventListener(
+  'orientationchange',
+  refreshMapSize
+);
+
+window.addEventListener(
+  'load',
+  refreshMapSize
+);
+
+/* HELPERS */
 
 function esc(s){
 
@@ -768,30 +733,6 @@ function esc(s){
     .replace(/</g,'&lt;')
     .replace(/>/g,'&gt;');
 }
-
-/* TIME */
-
-function fmtTime(iso){
-
-  try{
-
-    return new Date(iso).toLocaleString(
-      'en-GB',
-      {
-        day:'numeric',
-        month:'short',
-        hour:'2-digit',
-        minute:'2-digit',
-        hour12:true
-      }
-    );
-
-  }catch{
-    return iso;
-  }
-}
-
-/* MARKERS */
 
 function markerSvg(status){
 
@@ -859,7 +800,7 @@ function makeIcon(status){
   });
 }
 
-/* POPUPS */
+/* POPUP */
 
 function popupHtml(f){
 
@@ -888,14 +829,6 @@ function popupHtml(f){
         ${label}
       </div>
 
-      <div class="popup-time">
-        ${
-          f.reported_at
-            ? `Updated ${fmtTime(f.reported_at)}`
-            : 'No reports yet'
-        }
-      </div>
-
     </div>
   `;
 }
@@ -919,28 +852,21 @@ function renderMarkers(fountains){
       return;
     }
 
-    const lat = Number(f.lat);
-    const lon = Number(f.lon);
-
     const marker = L.marker(
-      [lat, lon],
+      [Number(f.lat), Number(f.lon)],
       {
         icon:makeIcon(f.status)
       }
     )
     .addTo(map)
     .bindPopup(
-      popupHtml(f),
-      {
-        maxWidth:260
-      }
+      popupHtml(f)
     )
     .bindTooltip(
-      `<strong>${esc(f.name)}</strong>`,
+      esc(f.name),
       {
         direction:'top',
-        offset:[0,-24],
-        opacity:.95
+        offset:[0,-20]
       }
     );
 
@@ -961,85 +887,60 @@ function renderList(fountains){
       'fountain-list'
     );
 
-  if(!fountains.length){
+  el.innerHTML =
+    fountains.map(f => {
 
-    el.innerHTML =
-      '<div style="padding:30px;text-align:center;color:#64748b">No fountains found</div>';
+      const badge =
+        f.status === 'on'
+          ? 'badge-on'
+          : f.status === 'off'
+            ? 'badge-off'
+            : 'badge-unk';
 
-    return;
-  }
+      const label =
+        f.status === 'on'
+          ? 'Open'
+          : f.status === 'off'
+            ? 'Closed'
+            : 'No data';
 
-  el.innerHTML = fountains.map(f => {
+      return `
+        <div
+          class="fountain-item"
+          onclick='selectFountain(${JSON.stringify(f.name)},true)'
+        >
 
-    const badge =
-      f.status === 'on'
-        ? 'badge-on'
-        : f.status === 'off'
-          ? 'badge-off'
-          : 'badge-unk';
+          <div class="fi-name">
+            ${esc(f.name)}
+          </div>
 
-    const label =
-      f.status === 'on'
-        ? 'Open'
-        : f.status === 'off'
-          ? 'Closed'
-          : 'No data';
+          <div class="fi-badge ${badge}">
+            ${label}
+          </div>
 
-    const selected =
-      f.name === selectedName
-        ? ' selected'
-        : '';
-
-    return `
-      <div
-        class="fountain-item${selected}"
-        onclick='selectFountain(${JSON.stringify(f.name)}, true)'
-      >
-
-        <div class="fi-name">
-          ${esc(f.name)}
         </div>
+      `;
 
-        <div class="fi-badge ${badge}">
-          ${label}
-        </div>
-
-      </div>
-    `;
-
-  }).join('');
+    }).join('');
 }
 
 /* SELECT */
 
-function selectFountain(name,fromList=true){
-
-  selectedName = name;
-
-  filterList();
+function selectFountain(name){
 
   const f = allFountains.find(
     x => x.name === name
   );
 
-  if(
-    !f ||
-    f.lat == null ||
-    f.lon == null
-  ){
-    return;
-  }
-
-  const lat = Number(f.lat);
-  const lon = Number(f.lon);
+  if(!f) return;
 
   refreshMapSize();
 
   map.flyTo(
-    [lat, lon],
+    [Number(f.lat), Number(f.lon)],
     17,
     {
-      duration:1.1
+      duration:1
     }
   );
 
@@ -1050,23 +951,9 @@ function selectFountain(name,fromList=true){
     }
 
   },700);
-
-  /* MOBILE SCROLL */
-
-  if(
-    fromList &&
-    window.innerWidth <= 700
-  ){
-
-    document.querySelector('.map-wrap')
-      .scrollIntoView({
-        behavior:'smooth',
-        block:'start'
-      });
-  }
 }
 
-/* FILTERS */
+/* FILTER */
 
 function getFiltered(){
 
@@ -1100,7 +987,7 @@ function filterList(){
   renderList(getFiltered());
 }
 
-/* FILTER BUTTONS */
+/* BUTTONS */
 
 function setFilter(filter,btn){
 
@@ -1121,43 +1008,48 @@ function setFilter(filter,btn){
     }[filter]
   );
 
-  filterList();
+  const filtered =
+    getFiltered();
 
-  allFountains.forEach(f=>{
+  renderList(filtered);
 
-    const m = markers[f.name];
+  Object.values(markers).forEach(
+    m => m.remove()
+  );
 
-    if(!m) return;
+  filtered.forEach(f => {
 
-    if(
-      filter === 'all' ||
-      f.status === filter
-    ){
-      m.addTo(map);
-    }else{
-      m.remove();
+    if(markers[f.name]){
+      markers[f.name].addTo(map);
     }
+
   });
 }
 
 /* STATS */
 
-function updateStats(fs){
+function updateStats(){
 
   document.getElementById(
     'count-on'
   ).textContent =
-    fs.filter(f=>f.status==='on').length;
+    allFountains.filter(
+      f => f.status === 'on'
+    ).length;
 
   document.getElementById(
     'count-off'
   ).textContent =
-    fs.filter(f=>f.status==='off').length;
+    allFountains.filter(
+      f => f.status === 'off'
+    ).length;
 
   document.getElementById(
     'count-unk'
   ).textContent =
-    fs.filter(f=>f.status==='unknown').length;
+    allFountains.filter(
+      f => f.status === 'unknown'
+    ).length;
 }
 
 /* LOAD */
@@ -1172,43 +1064,26 @@ async function loadData(){
 
     const data = await res.json();
 
-    allFountains = (
-      data.fountains || []
-    ).map(f => ({
-      ...f,
-      status:f.status || 'unknown'
-    }));
-
-    allFountains.sort((a,b)=>{
-
-      const order = {
-        on:0,
-        off:1,
-        unknown:2
-      };
-
-      return (
-        order[a.status] -
-        order[b.status]
-      ) || a.name.localeCompare(b.name);
-    });
+    allFountains =
+      (data.fountains || []).map(f => ({
+        ...f,
+        status:f.status || 'unknown'
+      }));
 
     renderMarkers(allFountains);
 
-    filterList();
+    renderList(allFountains);
 
-    updateStats(allFountains);
-
-    const updated =
-      data.updated_at
-        ? new Date(data.updated_at)
-        : null;
+    updateStats();
 
     document.getElementById(
       'updated-text'
     ).textContent =
-      updated
-        ? `Updated ${updated.toLocaleString('en-GB')}`
+      data.updated_at
+        ? 'Updated ' +
+          new Date(
+            data.updated_at
+          ).toLocaleString('en-GB')
         : 'Live data loaded';
 
   }catch(err){
@@ -1220,6 +1095,7 @@ async function loadData(){
     ).textContent =
       'Could not load fountain data';
   }
+
   finally{
 
     document.getElementById(
@@ -1233,23 +1109,6 @@ async function loadData(){
 initMap();
 
 loadData();
-
-/* MOBILE FIXES */
-
-window.addEventListener(
-  'resize',
-  refreshMapSize
-);
-
-window.addEventListener(
-  'orientationchange',
-  refreshMapSize
-);
-
-window.addEventListener(
-  'load',
-  refreshMapSize
-);
 
 </script>
 
