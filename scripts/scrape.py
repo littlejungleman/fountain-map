@@ -133,6 +133,9 @@ def get_live_statuses(html: str) -> dict:
                 entries[name] = {"status": status, "reported_at": iso, "dt": dt}
 
     print(f"  Parsed {total_rows} rows -> {len(entries)} unique fountains")
+    print("  Names found in table:")
+    for n in sorted(entries.keys()):
+        print(f"    {repr(n)}")
     return {k: {"status": v["status"], "reported_at": v["reported_at"]} for k, v in entries.items()}
 
 
@@ -191,6 +194,13 @@ def main():
     if not fountain_list:
         print("  Using coords file as fountain list fallback")
         fountain_list = list(coords.keys())
+
+    # Log any status names that don't match the fountain list (name mismatch)
+    unmatched_statuses = set(statuses.keys()) - set(fountain_list)
+    if unmatched_statuses:
+        print(f"  WARNING: {len(unmatched_statuses)} status names not in fountain list:")
+        for n in sorted(unmatched_statuses):
+            print(f"    {repr(n)}")
 
     fountains_out = []
     for name in fountain_list:
