@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
 
 <title>London Fountain Map 💧</title>
 
@@ -13,7 +16,10 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link
+  href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+  rel="stylesheet"
+/>
 
 <style>
 
@@ -63,15 +69,15 @@ body{
 /* HEADER */
 
 header{
-  background:linear-gradient(135deg,#0f4c81 0%,#0ea5e9 100%);
+  background:linear-gradient(
+    135deg,
+    #0f4c81 0%,
+    #0ea5e9 100%
+  );
 
   color:white;
 
   padding:14px 18px;
-
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
 
   box-shadow:
     0 6px 20px rgba(14,165,233,.24);
@@ -96,42 +102,10 @@ header{
   margin-top:2px;
 }
 
-.legend{
-  display:flex;
-  gap:8px;
-}
-
-.legend-item{
-  display:flex;
-  align-items:center;
-  gap:6px;
-
-  padding:6px 10px;
-
-  border-radius:999px;
-
-  background:rgba(255,255,255,.16);
-
-  font-size:.74rem;
-  font-weight:700;
-
-  backdrop-filter:blur(10px);
-}
-
-.dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-}
-
-.dot-on{background:var(--on);}
-.dot-off{background:var(--off);}
-.dot-unk{background:var(--unk);}
-
 /* INFO */
 
 #info-bar{
-  background:rgba(255,255,255,.7);
+  background:rgba(255,255,255,.74);
 
   backdrop-filter:blur(12px);
 
@@ -155,9 +129,9 @@ header{
 /* LAYOUT */
 
 .main-layout{
-  height:calc(100vh - 92px);
-
   display:flex;
+
+  height:calc(100vh - 103px);
 }
 
 /* SIDEBAR */
@@ -190,7 +164,7 @@ header{
   padding:12px 14px 12px 40px;
 
   border:none;
-  border-radius:14px;
+  border-radius:16px;
 
   font-family:inherit;
   font-size:.92rem;
@@ -201,8 +175,6 @@ header{
     12px center/18px no-repeat;
 
   outline:none;
-
-  transition:.2s;
 
   box-shadow:
     inset 0 0 0 1px rgba(148,163,184,.18);
@@ -228,7 +200,7 @@ header{
 
   padding:10px 6px;
 
-  border-radius:12px;
+  border-radius:14px;
 
   cursor:pointer;
 
@@ -282,9 +254,6 @@ header{
   padding:10px;
 
   text-align:center;
-
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.4);
 }
 
 .count{
@@ -315,7 +284,7 @@ header{
 
   border-radius:16px;
 
-  background:rgba(255,255,255,.82);
+  background:rgba(255,255,255,.84);
 
   cursor:pointer;
 
@@ -336,9 +305,6 @@ header{
 
 .fountain-item.selected{
   background:#dbeafe;
-
-  box-shadow:
-    0 0 0 2px rgba(14,165,233,.18);
 }
 
 .fi-name{
@@ -376,7 +342,10 @@ header{
 
 .map-wrap{
   flex:1;
+
   position:relative;
+
+  min-width:0;
 }
 
 #map{
@@ -387,8 +356,8 @@ header{
 .map-note{
   position:absolute;
 
-  right:10px;
   bottom:10px;
+  left:10px;
 
   z-index:1000;
 
@@ -402,7 +371,7 @@ header{
 
   font-size:.64rem;
 
-  opacity:.7;
+  opacity:.72;
 
   box-shadow:var(--shadow);
 }
@@ -533,12 +502,14 @@ header{
 @media (max-width:700px){
 
   body{
-    overflow-y:auto;
+    overflow:auto;
   }
 
   .main-layout{
     flex-direction:column;
+
     height:auto;
+    min-height:calc(100vh - 103px);
   }
 
   /* MAP FIRST */
@@ -546,8 +517,10 @@ header{
   .map-wrap{
     order:1;
 
-    height:55vh;
-    min-height:320px;
+    height:56vh;
+    min-height:360px;
+
+    width:100%;
   }
 
   #sidebar{
@@ -556,15 +529,11 @@ header{
     width:100%;
     min-width:unset;
 
-    margin-top:-14px;
-
     border-radius:24px 24px 0 0;
 
-    overflow:hidden;
-  }
+    margin-top:-14px;
 
-  .legend{
-    display:none;
+    overflow:hidden;
   }
 
   #fountain-list{
@@ -579,33 +548,12 @@ header{
 
 <header>
 
-  <div>
-    <div class="logo">
-      💧 <span>London</span> Fountain Map
-    </div>
-
-    <div class="subtitle">
-      Live splash pad status
-    </div>
+  <div class="logo">
+    💧 <span>London</span> Fountain Map
   </div>
 
-  <div class="legend">
-
-    <div class="legend-item">
-      <div class="dot dot-on"></div>
-      Open
-    </div>
-
-    <div class="legend-item">
-      <div class="dot dot-off"></div>
-      Closed
-    </div>
-
-    <div class="legend-item">
-      <div class="dot dot-unk"></div>
-      No data
-    </div>
-
+  <div class="subtitle">
+    Live splash pad status
   </div>
 
 </header>
@@ -620,7 +568,10 @@ header{
 
   <span>
     Data from
-    <a href="https://bablands.com/fountainwatch/" target="_blank">
+    <a
+      href="https://bablands.com/fountainwatch/"
+      target="_blank"
+    >
       bablands.com
     </a>
   </span>
@@ -628,6 +579,8 @@ header{
 </div>
 
 <div class="main-layout">
+
+  <!-- SIDEBAR -->
 
   <aside id="sidebar">
 
@@ -697,6 +650,8 @@ header{
 
   </aside>
 
+  <!-- MAP -->
+
   <div class="map-wrap">
 
     <div id="map"></div>
@@ -744,21 +699,29 @@ function initMap(){
     position:'bottomright'
   }).addTo(map);
 
-  /* STADIA */
+  /* FREE CARTO TILES */
 
   L.tileLayer(
-    'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
+    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
     {
       attribution:
-        '&copy; OpenStreetMap &copy; Stadia Maps',
+        '&copy; OpenStreetMap &copy; CARTO',
+      subdomains:'abcd',
       maxZoom:20
     }
   ).addTo(map);
+
+  /* FIX MOBILE RENDER */
+
+  setTimeout(()=>{
+    map.invalidateSize();
+  },200);
 }
 
 /* ESCAPE */
 
 function esc(s){
+
   return s
     .replace(/&/g,'&amp;')
     .replace(/</g,'&lt;')
@@ -787,12 +750,12 @@ function fmtTime(iso){
   }
 }
 
-/* MARKER SVG */
+/* SVG MARKER */
 
 function markerSvg(status){
 
   let color = '#94a3b8';
-  let symbol = '—';
+  let symbol = '–';
 
   if(status === 'on'){
     color = '#16a34a';
@@ -805,6 +768,7 @@ function markerSvg(status){
   }
 
   return `
+
     <div class="pin">
 
       <svg viewBox="0 0 64 64">
@@ -851,7 +815,7 @@ function makeIcon(status){
 
     iconAnchor:[17,34],
 
-    popupAnchor:[0,-30]
+    popupAnchor:[0,-28]
   });
 }
 
@@ -864,7 +828,7 @@ function popupHtml(f){
       ? '✓ Open'
       : f.status === 'off'
         ? '✕ Closed'
-        : '— No data';
+        : '– No data';
 
   const cls =
     f.status === 'on'
@@ -910,10 +874,15 @@ function renderMarkers(fountains){
 
   fountains.forEach(f => {
 
-    if(!f.lat || !f.lon) return;
+    if(
+      f.lat == null ||
+      f.lon == null
+    ){
+      return;
+    }
 
     const marker = L.marker(
-      [f.lat, f.lon],
+      [Number(f.lat), Number(f.lon)],
       {
         icon:makeIcon(f.status)
       }
@@ -935,7 +904,7 @@ function renderMarkers(fountains){
     );
 
     marker.on('click',()=>{
-      selectFountain(f.name);
+      selectFountain(f.name,false);
     });
 
     markers[f.name] = marker;
@@ -983,7 +952,7 @@ function renderList(fountains){
 
       <div
         class="fountain-item${selected}"
-        onclick="selectFountain(${JSON.stringify(f.name)})"
+        onclick='selectFountain(${JSON.stringify(f.name)}, true)'
       >
 
         <div class="fi-name">
@@ -995,6 +964,7 @@ function renderList(fountains){
         </div>
 
       </div>
+
     `;
 
   }).join('');
@@ -1002,7 +972,7 @@ function renderList(fountains){
 
 /* SELECT */
 
-function selectFountain(name){
+function selectFountain(name,fromList=true){
 
   selectedName = name;
 
@@ -1012,29 +982,39 @@ function selectFountain(name){
     x => x.name === name
   );
 
-  if(!f || !f.lat) return;
+  if(
+    !f ||
+    f.lat == null ||
+    f.lon == null
+  ){
+    return;
+  }
+
+  const lat = Number(f.lat);
+  const lon = Number(f.lon);
 
   map.flyTo(
-    [f.lat, f.lon],
+    [lat, lon],
     17,
     {
-      duration:1.1,
-      easeLinearity:.25
+      duration:1.1
     }
   );
 
-  if(markers[name]){
+  setTimeout(()=>{
 
-    setTimeout(()=>{
-
+    if(markers[name]){
       markers[name].openPopup();
+    }
 
-    },700);
-  }
+  },700);
 
-  /* MOBILE SCROLL */
+  /* MOBILE SCROLL TO MAP */
 
-  if(window.innerWidth <= 700){
+  if(
+    fromList &&
+    window.innerWidth <= 700
+  ){
 
     document.querySelector('.map-wrap')
       .scrollIntoView({
@@ -1202,12 +1182,26 @@ async function loadData(){
     document.getElementById(
       'loading'
     ).style.display='none';
+
+    setTimeout(()=>{
+      map.invalidateSize();
+    },300);
   }
 }
 
 initMap();
 
 loadData();
+
+/* MOBILE RESIZE FIX */
+
+window.addEventListener('resize',()=>{
+
+  setTimeout(()=>{
+    map.invalidateSize();
+  },200);
+
+});
 
 </script>
 
