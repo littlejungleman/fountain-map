@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-27T14:00:57.070026+00:00",
+  "updated_at": "2026-05-27T15:00:59.554679+00:00",
   "scrape_ok": true,
   "fountains": [
     {
@@ -97,8 +97,8 @@
       "name": "Parliament Hill paddling pool, Hampstead Heath",
       "lat": 51.5567,
       "lon": -0.15753,
-      "status": "off",
-      "reported_at": "2026-05-27T06:39:00+00:00"
+      "status": "on",
+      "reported_at": "2026-05-25T14:48:00+00:00"
     },
     {
       "name": "Queen's Park paddling pool",
@@ -139,8 +139,8 @@
       "name": "Swiss Cottage Open Space splash pad, Swiss Cottage",
       "lat": 51.54306,
       "lon": -0.17301,
-      "status": "on",
-      "reported_at": "2026-05-27T05:50:00+00:00"
+      "status": "unknown",
+      "reported_at": null
     },
     {
       "name": "Kilburn Grange Park splash pad",
@@ -336,14 +336,14 @@
       "lat": 51.42122,
       "lon": -0.11789,
       "status": "on",
-      "reported_at": "2026-05-27T07:27:00+00:00"
+      "reported_at": "2026-05-26T09:02:00+00:00"
     },
     {
       "name": "Clapham Common splash pad",
       "lat": 51.46215,
       "lon": -0.14015,
       "status": "off",
-      "reported_at": "2026-05-27T08:40:00+00:00"
+      "reported_at": "2026-05-26T16:00:00+00:00"
     },
     {
       "name": "North Sheen Recreation Ground paddling pool, Richmond",
@@ -392,7 +392,7 @@
       "lat": 51.40364,
       "lon": -0.03278,
       "status": "off",
-      "reported_at": "2026-05-26T22:19:00+00:00"
+      "reported_at": "2026-05-26T04:21:00+00:00"
     },
     {
       "name": "Magic Garden water play, Hampton Court Palace",
