@@ -1,228 +1,626 @@
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>London Fountain Map 💧</title>
-<meta name="description" content="Real-time status of kids' water play fountains and splash pads across London. Is it on? Find out before you go.">
+<meta name="description" content="Real-time status of kids' water play fountains and splash pads across London.">
+
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --water:   #0ea5e9;
-    --water-d: #0369a1;
-    --on:      #22c55e;
-    --on-d:    #15803d;
-    --off:     #ef4444;
-    --off-d:   #b91c1c;
-    --unk:     #94a3b8;
-    --unk-d:   #475569;
-    --bg:      #f0f9ff;
-    --surface: #ffffff;
-    --text:    #0f172a;
-    --muted:   #64748b;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --water: #38bdf8;
+  --water-d: #0f4c81;
+  --water-xd: #082f49;
 
+  --on: #22c55e;
+  --on-d: #166534;
+
+  --off: #ef4444;
+  --off-d: #991b1b;
+
+  --unk: #94a3b8;
+  --unk-d: #475569;
+
+  --bg: #dff4ff;
+  --surface: rgba(255,255,255,0.78);
+  --surface-solid: #ffffff;
+
+  --text: #0f172a;
+  --muted: #64748b;
+
+  --shadow:
+    0 10px 30px rgba(15,23,42,0.10),
+    0 2px 8px rgba(15,23,42,0.05);
+
+  --radius: 20px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+
+  background:
+    radial-gradient(circle at top left, #bae6fd 0%, transparent 35%),
+    radial-gradient(circle at bottom right, #bfdbfe 0%, transparent 30%),
+    linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%);
+
+  color: var(--text);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+header {
+  background: linear-gradient(135deg, #0f4c81 0%, #0ea5e9 100%);
+  color: white;
+
+  padding: 14px 20px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  box-shadow:
+    0 6px 20px rgba(14,165,233,0.25);
+
+  position: relative;
+  z-index: 1000;
+}
+
+.logo {
+  font-family:'Fredoka',sans-serif;
+  font-size:1.6rem;
+  font-weight:700;
+  line-height:1;
+}
+
+.logo span {
+  color: #dbeafe;
+}
+
+.subtitle {
+  margin-top: 4px;
+  font-size:0.78rem;
+  opacity:0.9;
+}
+
+.header-right {
+  margin-left: auto;
+}
+
+.legend {
+  display: flex;
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  background: rgba(255,255,255,0.14);
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  backdrop-filter: blur(8px);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot-on {
+  background: var(--on);
+}
+
+.dot-off {
+  background: var(--off);
+}
+
+.dot-unk {
+  background: var(--unk);
+}
+
+#info-bar {
+  background: rgba(255,255,255,0.7);
+
+  backdrop-filter: blur(12px);
+
+  padding: 8px 14px;
+
+  font-size: 0.78rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border-bottom: 1px solid rgba(255,255,255,0.6);
+}
+
+#info-bar a {
+  color: var(--water-d);
+  font-weight: 700;
+}
+
+.main-layout {
+  flex: 1;
+
+  display: flex;
+
+  min-height: 0;
+}
+
+#sidebar {
+  width: 340px;
+  min-width: 300px;
+
+  background: var(--surface);
+
+  backdrop-filter: blur(14px);
+
+  border-right: 1px solid rgba(255,255,255,0.4);
+
+  display:flex;
+  flex-direction:column;
+
+  overflow:hidden;
+
+  box-shadow: var(--shadow);
+
+  z-index: 500;
+}
+
+.sidebar-header {
+  padding: 16px;
+
+  border-bottom: 1px solid rgba(148,163,184,0.12);
+}
+
+#search {
+  width:100%;
+
+  padding:12px 14px 12px 40px;
+
+  border:none;
+  border-radius:14px;
+
+  font-family:inherit;
+  font-size:0.92rem;
+
+  background:
+    rgba(255,255,255,0.95)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z' clip-rule='evenodd'/%3E%3C/svg%3E") 12px center/18px no-repeat;
+
+  outline:none;
+
+  transition: all 0.2s ease;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(148,163,184,0.18);
+}
+
+#search:focus {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 0 0 3px rgba(56,189,248,0.18),
+    inset 0 0 0 1px rgba(56,189,248,0.4);
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+
+  margin-top: 12px;
+}
+
+.filter-tab {
+  flex: 1;
+
+  border: none;
+
+  padding: 10px 6px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.7);
+
+  cursor: pointer;
+
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+
+  transition: all 0.18s ease;
+}
+
+.filter-tab:hover {
+  transform: translateY(-1px);
+}
+
+.active-all {
+  background: #dbeafe;
+  color: var(--water-d);
+}
+
+.active-on {
+  background: #dcfce7;
+  color: var(--on-d);
+}
+
+.active-off {
+  background: #fee2e2;
+  color: var(--off-d);
+}
+
+.active-unk {
+  background: #e2e8f0;
+  color: var(--unk-d);
+}
+
+.stats-row {
+  display: flex;
+  gap: 10px;
+
+  padding: 12px 16px;
+
+  background: rgba(255,255,255,0.35);
+
+  border-bottom: 1px solid rgba(148,163,184,0.12);
+}
+
+.stat-pill {
+  flex: 1;
+
+  background: rgba(255,255,255,0.72);
+
+  border-radius: 14px;
+
+  padding: 10px;
+
+  text-align: center;
+
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.count {
+  display: block;
+
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1.3rem;
+
+  margin-bottom: 4px;
+}
+
+#fountain-list {
+  overflow-y: auto;
+
+  padding: 10px;
+
+  flex: 1;
+}
+
+.fountain-item {
+  display:flex;
+  align-items:center;
+
+  padding:12px 14px;
+  margin-bottom:10px;
+  gap:10px;
+
+  cursor:pointer;
+
+  border-radius:14px;
+
+  background: rgba(255,255,255,0.72);
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.fountain-item:hover {
+  background: white;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 20px rgba(14,165,233,0.10);
+}
+
+.fountain-item.selected {
+  background: #e0f2fe;
+
+  box-shadow:
+    0 0 0 2px rgba(14,165,233,0.18);
+}
+
+.fountain-item.hovered {
+  background: #dbeafe;
+}
+
+.fi-dot {
+  width: 12px;
+  height: 12px;
+
+  border-radius: 50%;
+
+  flex-shrink: 0;
+}
+
+.fi-name {
+  flex: 1;
+
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.fi-badge {
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.badge-on {
+  background: #dcfce7;
+  color: var(--on-d);
+}
+
+.badge-off {
+  background: #fee2e2;
+  color: var(--off-d);
+}
+
+.badge-unk {
+  background: #e2e8f0;
+  color: var(--unk-d);
+}
+
+.no-results {
+  text-align: center;
+  padding: 30px;
+  color: var(--muted);
+}
+
+.map-wrap {
+  flex: 1;
+
+  position: relative;
+
+  min-width: 0;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+.map-note {
+  position: absolute;
+
+  bottom: 16px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  z-index: 1000;
+
+  background: rgba(255,255,255,0.9);
+
+  backdrop-filter: blur(10px);
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+
+  box-shadow: var(--shadow);
+}
+
+#loading {
+  position: absolute;
+  inset: 0;
+
+  background: rgba(240,249,255,0.82);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 2000;
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+
+  border: 4px solid #bae6fd;
+  border-top-color: var(--water);
+
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#loading p {
+  margin-top: 14px;
+
+  font-family: 'Fredoka', sans-serif;
+  font-size: 1rem;
+
+  color: var(--water-d);
+}
+
+.fountain-marker {
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  border: 3px solid white;
+
+  box-shadow:
+    0 4px 10px rgba(0,0,0,0.25);
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.fountain-marker.hovered {
+  transform: scale(1.35);
+
+  box-shadow:
+    0 10px 20px rgba(0,0,0,0.35);
+}
+
+.fm-on {
+  background: linear-gradient(135deg,#4ade80,#22c55e);
+}
+
+.fm-off {
+  background: linear-gradient(135deg,#f87171,#ef4444);
+}
+
+.fm-unk {
+  background: linear-gradient(135deg,#cbd5e1,#94a3b8);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 18px !important;
+
+  box-shadow:
+    0 20px 40px rgba(15,23,42,0.22) !important;
+
+  overflow: hidden;
+}
+
+.popup-inner {
+  padding: 8px 6px;
+  min-width: 190px;
+}
+
+.popup-name {
+  font-family:'Fredoka',sans-serif;
+  font-size:1rem;
+  font-weight:600;
+  line-height:1.2;
+  margin-bottom:10px;
+}
+
+.popup-status {
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+
+  font-size:0.82rem;
+  font-weight:700;
+
+  padding:5px 12px;
+
+  border-radius:999px;
+
+  margin-bottom:6px;
+}
+
+.ps-on {
+  background: #dcfce7;
+  color: var(--on-d);
+}
+
+.ps-off {
+  background: #fee2e2;
+  color: var(--off-d);
+}
+
+.ps-unk {
+  background: #e2e8f0;
+  color: var(--unk-d);
+}
+
+.popup-time {
+  margin-top: 8px;
+
+  font-size: 0.72rem;
+
+  color: var(--muted);
+}
+
+@media (max-width: 700px) {
   body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    display: flex;
-    flex-direction: column;
-    height: 100dvh; /* full viewport, no scroll on desktop */
+    overflow-y: auto;
   }
 
-  /* ── HEADER ── */
-  header {
-    background: var(--water-d);
-    color: white;
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(3,105,161,0.4);
-  }
-  .logo { font-family:'Fredoka',sans-serif; font-size:1.4rem; font-weight:700; line-height:1; white-space:nowrap; }
-  .logo span { color:#bae6fd; }
-  .subtitle { font-size:0.73rem; opacity:0.75; }
-  .header-right { margin-left:auto; }
-  .legend { display:flex; gap:6px; font-size:0.73rem; font-weight:500; }
-  .legend-item { display:flex; align-items:center; gap:4px; background:rgba(255,255,255,0.15); padding:3px 8px; border-radius:99px; }
-  .dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-  .dot-on  { background:var(--on); }
-  .dot-off { background:var(--off); }
-  .dot-unk { background:var(--unk); }
-
-  /* ── INFO BAR ── */
-  #info-bar {
-    background:#e0f2fe; color:var(--water-d);
-    font-size:0.72rem; padding:4px 12px;
-    border-bottom:1px solid #bae6fd;
-    display:flex; align-items:center; justify-content:center;
-    gap:8px; flex-shrink:0; flex-wrap:wrap;
-    text-align:center;
-  }
-  #info-bar a { color:inherit; }
-
-  #error-msg {
-    display:none; background:#fee2e2; color:var(--off-d);
-    padding:7px 16px; font-size:0.8rem; text-align:center;
-    border-bottom:1px solid #fca5a5; flex-shrink:0;
-  }
-
-  /* ── DESKTOP layout: sidebar left, map right, fills remaining height ── */
   .main-layout {
-    display:flex;
-    flex:1;
-    min-height:0; /* critical for flex children to shrink */
-    overflow:hidden;
+    flex-direction: column;
   }
 
-  /* ── SIDEBAR ── */
-  #sidebar {
-    width:300px; min-width:260px;
-    background:var(--surface);
-    border-right:1px solid #e2e8f0;
-    display:flex; flex-direction:column;
-    overflow:hidden; flex-shrink:0;
-  }
-  .sidebar-header { padding:12px 12px 8px; border-bottom:1px solid #f1f5f9; flex-shrink:0; }
-  #search {
-    width:100%; padding:8px 12px 8px 32px;
-    border:1.5px solid #e2e8f0; border-radius:10px;
-    font-family:inherit; font-size:0.85rem;
-    background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z' clip-rule='evenodd'/%3E%3C/svg%3E") 8px center/16px no-repeat;
-    outline:none; transition:border-color 0.15s;
-  }
-  #search:focus { border-color:var(--water); }
-  .filter-tabs { display:flex; gap:4px; margin-top:8px; }
-  .filter-tab {
-    flex:1; padding:5px 2px;
-    border:1.5px solid transparent; border-radius:8px;
-    font-size:0.72rem; font-weight:600; cursor:pointer;
-    background:#f8fafc; color:var(--muted);
-    font-family:inherit; text-align:center;
-    transition:all 0.15s; white-space:nowrap;
-  }
-  .filter-tab.active-all { background:#e0f2fe; color:var(--water-d); border-color:var(--water); }
-  .filter-tab.active-on  { background:#dcfce7; color:var(--on-d);    border-color:var(--on); }
-  .filter-tab.active-off { background:#fee2e2; color:var(--off-d);   border-color:var(--off); }
-  .filter-tab.active-unk { background:#f1f5f9; color:var(--unk-d);   border-color:var(--unk); }
-
-  .stats-row {
-    display:flex; gap:6px; padding:6px 12px;
-    background:#f8fafc; border-bottom:1px solid #f1f5f9; flex-shrink:0;
-  }
-  .stat-pill { display:flex; align-items:center; gap:4px; font-size:0.72rem; font-weight:600; }
-  .stat-pill .count { font-size:0.95rem; font-family:'Fredoka',sans-serif; font-weight:700; }
-
-  #fountain-list { overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch; }
-  .fountain-item {
-    display:flex; align-items:center; padding:9px 12px; gap:9px;
-    cursor:pointer; border-bottom:1px solid #f8fafc; transition:background 0.1s;
-  }
-  .fountain-item:hover  { background:#f0f9ff; }
-  .fountain-item.selected { background:#e0f2fe; }
-  .fi-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-  .fi-name { font-size:0.82rem; font-weight:500; line-height:1.3; flex:1; }
-  .fi-badge { font-size:0.67rem; font-weight:700; padding:2px 6px; border-radius:99px; white-space:nowrap; flex-shrink:0; }
-  .badge-on  { background:#dcfce7; color:var(--on-d); }
-  .badge-off { background:#fee2e2; color:var(--off-d); }
-  .badge-unk { background:#f1f5f9; color:var(--unk-d); }
-  .no-results { padding:24px 16px; text-align:center; color:var(--muted); font-size:0.85rem; }
-
-  /* ── MAP ── */
   .map-wrap {
-    flex:1; display:flex; flex-direction:column;
-    min-width:0; min-height:0; position:relative;
-  }
-  #map { flex:1; min-height:0; }
-  .map-note {
-    padding:4px 10px; background:#f8fafc;
-    border-top:1px solid #e2e8f0;
-    font-size:0.68rem; color:var(--muted);
-    text-align:center; flex-shrink:0;
+    order: 1;
+    height: 55vh;
   }
 
-  /* ── LOADING overlay ── */
-  #loading {
-    position:absolute; inset:0;
-    background:rgba(240,249,255,0.88);
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    z-index:2000; gap:10px;
+  #sidebar {
+    order: 2;
+
+    width: 100%;
+    min-width: unset;
+
+    margin-top: -14px;
+
+    border-radius: 22px 22px 0 0;
+
+    overflow: hidden;
+
+    position: relative;
+
+    z-index: 600;
   }
-  .spinner {
-    width:38px; height:38px;
-    border:4px solid #bae6fd; border-top-color:var(--water);
-    border-radius:50%; animation:spin 0.7s linear infinite;
+
+  .legend {
+    display: none;
   }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  #loading p { font-family:'Fredoka',sans-serif; font-size:1rem; color:var(--water-d); }
-
-  /* ── POPUP ── */
-  .leaflet-popup-content-wrapper { border-radius:14px !important; box-shadow:0 8px 24px rgba(0,0,0,0.18) !important; }
-  .popup-inner { padding:4px 2px; min-width:175px; }
-  .popup-name { font-family:'Fredoka',sans-serif; font-size:0.95rem; font-weight:600; line-height:1.2; margin-bottom:7px; }
-  .popup-status { display:inline-flex; align-items:center; gap:5px; font-size:0.82rem; font-weight:700; padding:3px 10px; border-radius:99px; margin-bottom:5px; }
-  .ps-on  { background:#dcfce7; color:var(--on-d); }
-  .ps-off { background:#fee2e2; color:var(--off-d); }
-  .ps-unk { background:#f1f5f9; color:var(--unk-d); }
-  .popup-time { font-size:0.7rem; color:var(--muted); margin-top:3px; }
-  .fountain-marker { width:26px; height:26px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); border:2px solid white; box-shadow:0 2px 6px rgba(0,0,0,0.3); }
-  .fm-on  { background:var(--on); }
-  .fm-off { background:var(--off); }
-  .fm-unk { background:var(--unk); }
-
-  /* ══════════════════════════════════════════
-     MOBILE  ≤ 700px
-     Layout: header → info bar → map → map-note → list (scrollable)
-     Map comes first visually even though sidebar is first in HTML.
-  ══════════════════════════════════════════ */
-  @media (max-width:700px) {
-    body { height:auto; min-height:100dvh; overflow-y:auto; }
-
-    .main-layout {
-      flex-direction:column;
-      overflow:visible;
-      flex:none;
-    }
-
-    /* Map appears first on mobile */
-    .map-wrap { order:1; }
-    #sidebar   { order:2; }
-
-    /* Fixed-height map panel */
-    .map-wrap {
-      height:56vw;
-      min-height:220px;
-      max-height:320px;
-      flex:none;
-    }
-
-    /* Sidebar becomes a normal block below the map */
-    #sidebar {
-      width:100%; min-width:unset;
-      border-right:none;
-      border-top:2px solid #e2e8f0;
-      flex:none; overflow:visible;
-    }
-
-    /* Fountain list scrolls within a reasonable window */
-    #fountain-list {
-      max-height:45vh;
-      overflow-y:auto;
-      -webkit-overflow-scrolling:touch;
-    }
-
-    .legend { display:none; }
-    .fountain-item { padding:11px 12px; }
-    .filter-tab { padding:7px 2px; font-size:0.75rem; }
-  }
+}
 </style>
 </head>
 <body>
@@ -230,191 +628,566 @@
 <header>
   <div>
     <div class="logo">💧 <span>London</span> Fountain Map</div>
-    <div class="subtitle">Kids' water play — live status</div>
+    <div class="subtitle">Live splash pad & fountain status</div>
   </div>
+
   <div class="header-right">
     <div class="legend">
-      <div class="legend-item"><div class="dot dot-on"></div>Open</div>
-      <div class="legend-item"><div class="dot dot-off"></div>Closed</div>
-      <div class="legend-item"><div class="dot dot-unk"></div>No data</div>
+      <div class="legend-item">
+        <div class="dot dot-on"></div>
+        Open
+      </div>
+
+      <div class="legend-item">
+        <div class="dot dot-off"></div>
+        Closed
+      </div>
+
+      <div class="legend-item">
+        <div class="dot dot-unk"></div>
+        No data
+      </div>
     </div>
   </div>
 </header>
 
 <div id="info-bar">
-  <span id="updated-text">Loading…</span>
-  <span style="opacity:0.5">•</span>
-  <span>Status data from <a href="https://bablands.com/fountainwatch/" target="_blank">bablands.com</a></span>
+  <span id="updated-text">Loading fountain status…</span>
+  <span>•</span>
+  <span>
+    Data from
+    <a href="https://bablands.com/fountainwatch/" target="_blank">
+      bablands.com
+    </a>
+  </span>
 </div>
-
-<div id="error-msg" role="alert"></div>
 
 <div class="main-layout">
 
-  <!-- On desktop: left panel. On mobile: appears BELOW map via CSS order -->
-  <aside id="sidebar" aria-label="Fountain list">
+  <aside id="sidebar">
+
     <div class="sidebar-header">
-      <input type="search" id="search" placeholder="Search fountains…" oninput="filterList()" autocomplete="off">
+
+      <input
+        type="search"
+        id="search"
+        placeholder="Search fountains…"
+        oninput="filterList()"
+      >
+
       <div class="filter-tabs">
-        <button class="filter-tab active-all" onclick="setFilter('all',this)">All</button>
-        <button class="filter-tab" onclick="setFilter('on',this)">✓ Open</button>
-        <button class="filter-tab" onclick="setFilter('off',this)">✗ Closed</button>
-        <button class="filter-tab" onclick="setFilter('unknown',this)">? No data</button>
+        <button class="filter-tab active-all" onclick="setFilter('all', this)">
+          All
+        </button>
+
+        <button class="filter-tab" onclick="setFilter('on', this)">
+          ✓ Open
+        </button>
+
+        <button class="filter-tab" onclick="setFilter('off', this)">
+          ✕ Closed
+        </button>
+
+        <button class="filter-tab" onclick="setFilter('unknown', this)">
+          ? No data
+        </button>
       </div>
+
     </div>
+
     <div class="stats-row">
-      <div class="stat-pill" style="color:var(--on-d)"><span class="count" id="count-on">–</span>&nbsp;open</div>
-      <div class="stat-pill" style="color:var(--off-d)"><span class="count" id="count-off">–</span>&nbsp;closed</div>
-      <div class="stat-pill" style="color:var(--unk-d)"><span class="count" id="count-unk">–</span>&nbsp;no data</div>
+
+      <div class="stat-pill">
+        <span class="count" id="count-on">0</span>
+        Open
+      </div>
+
+      <div class="stat-pill">
+        <span class="count" id="count-off">0</span>
+        Closed
+      </div>
+
+      <div class="stat-pill">
+        <span class="count" id="count-unk">0</span>
+        No data
+      </div>
+
     </div>
+
     <div id="fountain-list"></div>
+
   </aside>
 
   <div class="map-wrap">
+
     <div id="map"></div>
-    <div class="map-note">📍 Locations are approximate and may not be exact</div>
-    <div id="loading"><div class="spinner"></div><p>Loading fountains…</p></div>
+
+    <div class="map-note">
+      📍 Fountain locations are approximate
+    </div>
+
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>Loading fountains…</p>
+    </div>
+
   </div>
 
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <script>
 'use strict';
-let map, allFountains = [], markers = {}, currentFilter = 'all', selectedName = null;
+
+let map;
+let allFountains = [];
+let markers = {};
+let currentFilter = 'all';
+let selectedName = null;
 
 function initMap() {
-  map = L.map('map', { center:[51.505,-0.09], zoom:11, zoomControl:false });
-  L.control.zoom({ position:'bottomright' }).addTo(map);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom:19
+  map = L.map('map', {
+    center: [51.505, -0.09],
+    zoom: 11,
+    zoomControl: false
+  });
+
+  L.control.zoom({
+    position: 'bottomright'
   }).addTo(map);
+
+  L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19
+    }
+  ).addTo(map);
+}
+
+function esc(s) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function fmtTime(iso) {
+  try {
+    return new Date(iso).toLocaleString(
+      'en-GB',
+      {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }
+    );
+  }
+  catch {
+    return iso;
+  }
 }
 
 function makeIcon(status) {
-  const cls = status==='on'?'fm-on':status==='off'?'fm-off':'fm-unk';
-  return L.divIcon({ className:'', html:`<div class="fountain-marker ${cls}"></div>`, iconSize:[26,26], iconAnchor:[13,26], popupAnchor:[0,-26] });
-}
+  const cls = status === 'on'
+    ? 'fm-on'
+    : status === 'off'
+      ? 'fm-off'
+      : 'fm-unk';
 
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  return L.divIcon({
+    className: '',
 
-function fmtTime(iso) {
-  try { return new Date(iso).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}); }
-  catch { return iso; }
+    html: `
+      <div class="fountain-marker ${cls}"></div>
+    `,
+
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -12]
+  });
 }
 
 function popupHtml(f) {
-  const lbl = f.status==='on'?'✓ Open':f.status==='off'?'✗ Closed':'? No data';
-  const cls = f.status==='on'?'ps-on':f.status==='off'?'ps-off':'ps-unk';
-  const t   = f.reported_at
-    ? `<div class="popup-time">Reported: ${fmtTime(f.reported_at)}</div>`
-    : `<div class="popup-time" style="color:#94a3b8">No reports yet — <a href="https://bablands.com/fountainwatch/" target="_blank">submit one</a></div>`;
-  return `<div class="popup-inner"><div class="popup-name">${esc(f.name)}</div><div class="popup-status ${cls}">${lbl}</div>${t}</div>`;
+
+  const label = f.status === 'on'
+    ? '✓ Open'
+    : f.status === 'off'
+      ? '✕ Closed'
+      : '? No data';
+
+  const cls = f.status === 'on'
+    ? 'ps-on'
+    : f.status === 'off'
+      ? 'ps-off'
+      : 'ps-unk';
+
+  return `
+    <div class="popup-inner">
+
+      <div class="popup-name">
+        ${esc(f.name)}
+      </div>
+
+      <div class="popup-status ${cls}">
+        ${label}
+      </div>
+
+      <div class="popup-time">
+        ${f.reported_at
+          ? `Updated ${fmtTime(f.reported_at)}`
+          : 'No reports yet'}
+      </div>
+
+    </div>
+  `;
+}
+
+function highlightListItem(name) {
+  document.querySelectorAll('.fountain-item').forEach(el => {
+
+    if (el.dataset.name === name) {
+      el.classList.add('hovered');
+      el.scrollIntoView({ block: 'nearest' });
+    }
+  });
+}
+
+function clearListHighlight() {
+  document.querySelectorAll('.fountain-item').forEach(el => {
+    el.classList.remove('hovered');
+  });
+}
+
+function hoverMarker(name, hovering = true) {
+
+  const marker = markers[name];
+
+  if (!marker) return;
+
+  const el = marker.getElement();
+
+  if (!el) return;
+
+  const dot = el.querySelector('.fountain-marker');
+
+  if (!dot) return;
+
+  if (hovering) {
+    dot.classList.add('hovered');
+    marker.openTooltip();
+  }
+  else {
+    dot.classList.remove('hovered');
+    marker.closeTooltip();
+  }
 }
 
 function renderMarkers(fountains) {
-  Object.values(markers).forEach(m=>m.remove());
+
+  Object.values(markers).forEach(m => m.remove());
+
   markers = {};
+
   fountains.forEach(f => {
-    if (!f.lat||!f.lon) return;
-    const m = L.marker([f.lat,f.lon],{icon:makeIcon(f.status)}).addTo(map).bindPopup(popupHtml(f),{maxWidth:260});
-    m.on('click',()=>selectFountain(f.name));
-    markers[f.name]=m;
+
+    if (!f.lat || !f.lon) return;
+
+    const marker = L.marker(
+      [f.lat, f.lon],
+      {
+        icon: makeIcon(f.status)
+      }
+    )
+    .addTo(map)
+    .bindPopup(
+      popupHtml(f),
+      {
+        maxWidth: 260
+      }
+    )
+    .bindTooltip(
+      `<strong>${esc(f.name)}</strong>`,
+      {
+        direction: 'top',
+        offset: [0, -20],
+        opacity: 0.95
+      }
+    );
+
+    marker.on('click', () => {
+      selectFountain(f.name);
+    });
+
+    marker.on('mouseover', () => {
+
+      const el = marker.getElement();
+
+      if (el) {
+        const dot = el.querySelector('.fountain-marker');
+
+        if (dot) {
+          dot.classList.add('hovered');
+        }
+      }
+
+      highlightListItem(f.name);
+
+      marker.openTooltip();
+    });
+
+    marker.on('mouseout', () => {
+
+      const el = marker.getElement();
+
+      if (el) {
+        const dot = el.querySelector('.fountain-marker');
+
+        if (dot) {
+          dot.classList.remove('hovered');
+        }
+      }
+
+      clearListHighlight();
+
+      marker.closeTooltip();
+    });
+
+    markers[f.name] = marker;
   });
 }
 
 function renderList(fountains) {
+
   const el = document.getElementById('fountain-list');
-  if (!fountains.length) { el.innerHTML='<div class="no-results">No fountains match.</div>'; return; }
+
+  if (!fountains.length) {
+    el.innerHTML = '<div class="no-results">No fountains found.</div>';
+    return;
+  }
+
   el.innerHTML = fountains.map(f => {
-    const dc = f.status==='on'?'#22c55e':f.status==='off'?'#ef4444':'#94a3b8';
-    const bc = f.status==='on'?'badge-on':f.status==='off'?'badge-off':'badge-unk';
-    const lb = f.status==='on'?'Open':f.status==='off'?'Closed':'No data';
-    const sel= f.name===selectedName?' selected':'';
-    return `<div class="fountain-item${sel}" onclick="selectFountain(${JSON.stringify(f.name)})">
-      <div class="fi-dot" style="background:${dc}"></div>
-      <div class="fi-name">${esc(f.name)}</div>
-      <div class="fi-badge ${bc}">${lb}</div>
-    </div>`;
+
+    const dc = f.status === 'on'
+      ? '#22c55e'
+      : f.status === 'off'
+        ? '#ef4444'
+        : '#94a3b8';
+
+    const bc = f.status === 'on'
+      ? 'badge-on'
+      : f.status === 'off'
+        ? 'badge-off'
+        : 'badge-unk';
+
+    const lb = f.status === 'on'
+      ? 'Open'
+      : f.status === 'off'
+        ? 'Closed'
+        : 'No data';
+
+    const sel = f.name === selectedName
+      ? ' selected'
+      : '';
+
+    return `
+
+      <div
+        class="fountain-item${sel}"
+        data-name="${esc(f.name)}"
+        onclick="selectFountain(${JSON.stringify(f.name)})"
+        onmouseenter="hoverMarker(${JSON.stringify(f.name)}, true)"
+        onmouseleave="hoverMarker(${JSON.stringify(f.name)}, false)"
+      >
+
+        <div
+          class="fi-dot"
+          style="background:${dc}"
+        ></div>
+
+        <div class="fi-name">
+          ${esc(f.name)}
+        </div>
+
+        <div class="fi-badge ${bc}">
+          ${lb}
+        </div>
+
+      </div>
+    `;
+
   }).join('');
 }
 
 function selectFountain(name) {
+
   selectedName = name;
+
   filterList();
-  const f = allFountains.find(x=>x.name===name);
-  if (!f||!f.lat) return;
-  map.flyTo([f.lat,f.lon],16,{duration:0.8});
-  if (markers[name]) setTimeout(()=>markers[name].openPopup(),900);
-  // Mobile: scroll up so map is visible
-  if (window.innerWidth<=700) {
-    document.querySelector('.map-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+
+  const f = allFountains.find(x => x.name === name);
+
+  if (!f || !f.lat) return;
+
+  map.flyTo(
+    [f.lat, f.lon],
+    16,
+    {
+      duration: 0.8
+    }
+  );
+
+  if (markers[name]) {
+    setTimeout(() => {
+      markers[name].openPopup();
+    }, 700);
   }
 }
 
 function getFiltered() {
-  const q = document.getElementById('search').value.toLowerCase();
+
+  const q = document
+    .getElementById('search')
+    .value
+    .toLowerCase();
+
   return allFountains.filter(f => {
-    if (currentFilter!=='all' && f.status!==currentFilter) return false;
-    if (q && !f.name.toLowerCase().includes(q)) return false;
+
+    if (
+      currentFilter !== 'all' &&
+      f.status !== currentFilter
+    ) {
+      return false;
+    }
+
+    if (
+      q &&
+      !f.name.toLowerCase().includes(q)
+    ) {
+      return false;
+    }
+
     return true;
   });
 }
-function filterList() { renderList(getFiltered()); }
+
+function filterList() {
+  renderList(getFiltered());
+}
 
 function setFilter(filter, btn) {
+
   currentFilter = filter;
-  document.querySelectorAll('.filter-tab').forEach(t=>t.className='filter-tab');
-  btn.classList.add({all:'active-all',on:'active-on',off:'active-off',unknown:'active-unk'}[filter]||'active-all');
+
+  document.querySelectorAll('.filter-tab').forEach(t => {
+    t.className = 'filter-tab';
+  });
+
+  btn.classList.add(
+    {
+      all: 'active-all',
+      on: 'active-on',
+      off: 'active-off',
+      unknown: 'active-unk'
+    }[filter] || 'active-all'
+  );
+
   filterList();
+
   allFountains.forEach(f => {
-    const m=markers[f.name]; if(!m) return;
-    (filter==='all'||f.status===filter)?m.addTo(map):m.remove();
+
+    const m = markers[f.name];
+
+    if (!m) return;
+
+    if (
+      filter === 'all' ||
+      f.status === filter
+    ) {
+      m.addTo(map);
+    }
+    else {
+      m.remove();
+    }
   });
 }
 
 function updateStats(fs) {
-  document.getElementById('count-on').textContent  = fs.filter(f=>f.status==='on').length;
-  document.getElementById('count-off').textContent = fs.filter(f=>f.status==='off').length;
-  document.getElementById('count-unk').textContent = fs.filter(f=>f.status==='unknown').length;
+
+  document.getElementById('count-on').textContent =
+    fs.filter(f => f.status === 'on').length;
+
+  document.getElementById('count-off').textContent =
+    fs.filter(f => f.status === 'off').length;
+
+  document.getElementById('count-unk').textContent =
+    fs.filter(f => f.status === 'unknown').length;
 }
 
 async function loadData() {
-  document.getElementById('loading').style.display='flex';
-  document.getElementById('error-msg').style.display='none';
+
+  document.getElementById('loading').style.display = 'flex';
+
   try {
-    const res  = await fetch('data.json?_='+Date.now());
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const res = await fetch(
+      'data.json?_=' + Date.now()
+    );
+
     const data = await res.json();
-    allFountains = (data.fountains||[]).map(f=>({...f,status:f.status||'unknown'}));
-    allFountains.sort((a,b)=>{
-      const o={on:0,off:1,unknown:2};
-      return (o[a.status]-o[b.status])||a.name.localeCompare(b.name);
+
+    allFountains = (data.fountains || []).map(f => ({
+      ...f,
+      status: f.status || 'unknown'
+    }));
+
+    allFountains.sort((a, b) => {
+
+      const order = {
+        on: 0,
+        off: 1,
+        unknown: 2
+      };
+
+      return (
+        order[a.status] - order[b.status]
+      ) || a.name.localeCompare(b.name);
     });
+
     renderMarkers(allFountains);
+
     filterList();
+
     updateStats(allFountains);
-    const upd = data.updated_at ? new Date(data.updated_at) : null;
-    const timeStr = upd ? upd.toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true}) : '';
-    if (data.scrape_ok === false) {
-      document.getElementById('updated-text').innerHTML =
-        `⚠️ Could not reach bablands.com — showing last known data (${timeStr})`;
-    } else {
-      document.getElementById('updated-text').textContent = timeStr ? `Scraped: ${timeStr}` : 'Data loaded';
-    }
-  } catch(err) {
+
+    const updated = data.updated_at
+      ? new Date(data.updated_at)
+      : null;
+
+    document.getElementById('updated-text').textContent =
+      updated
+        ? `Updated ${updated.toLocaleString('en-GB')}`
+        : 'Live data loaded';
+  }
+  catch (err) {
+
     console.error(err);
-    document.getElementById('error-msg').textContent='Could not load data. Please try reloading the page.';
-    document.getElementById('error-msg').style.display='block';
-    document.getElementById('updated-text').textContent='Load failed';
-  } finally {
-    document.getElementById('loading').style.display='none';
+
+    document.getElementById('updated-text').textContent =
+      'Could not load fountain data';
+  }
+  finally {
+
+    document.getElementById('loading').style.display = 'none';
   }
 }
 
 initMap();
 loadData();
 </script>
+
 </body>
 </html>
