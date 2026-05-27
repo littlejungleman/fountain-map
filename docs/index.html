@@ -685,11 +685,11 @@ function renderMarkers(){
   </div>
 
   ${
-    f.last_updated
+    f.reported_at
       ? `
         <div class="popup-updated">
           Last updated:
-          ${f.last_updated}
+          ${new Date(f.reported_at).toLocaleString('en-GB')}
         </div>
       `
       : ''
