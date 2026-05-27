@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-27T12:22:08.378096+00:00",
+  "updated_at": "2026-05-27T14:00:57.070026+00:00",
   "scrape_ok": true,
   "fountains": [
     {
@@ -343,7 +343,7 @@
       "lat": 51.46215,
       "lon": -0.14015,
       "status": "off",
-      "reported_at": "2026-05-26T16:00:00+00:00"
+      "reported_at": "2026-05-27T08:40:00+00:00"
     },
     {
       "name": "North Sheen Recreation Ground paddling pool, Richmond",
