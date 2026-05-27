@@ -306,6 +306,7 @@ header{
 .map-wrap{
   flex:1;
   position:relative;
+  min-height:300px;
 }
 
 #map{
@@ -334,6 +335,22 @@ header{
     0 4px 12px rgba(0,0,0,.08);
 }
 
+/* POPUP */
+
+.popup-title{
+  font-weight:700;
+  margin-bottom:8px;
+}
+
+.popup-status{
+  margin-bottom:8px;
+}
+
+.popup-updated{
+  font-size:.8rem;
+  color:#64748b;
+}
+
 /* MARKERS */
 
 .pin{
@@ -359,15 +376,28 @@ header{
     overflow:auto;
   }
 
+  body{
+    overflow-x:hidden;
+  }
+
   .layout{
     flex-direction:column;
     height:auto;
+    min-height:100vh;
   }
 
   .map-wrap{
     order:1;
 
-    height:58vh;
+    width:100%;
+    height:55vh;
+    min-height:420px;
+
+    flex:none;
+  }
+
+  #map{
+    height:100%;
     min-height:420px;
   }
 
@@ -379,7 +409,10 @@ header{
 
     border-radius:24px 24px 0 0;
 
-    margin-top:-16px;
+    margin-top:-18px;
+
+    position:relative;
+    z-index:1000;
   }
 
   .list{
@@ -519,8 +552,6 @@ function initMap(){
     zoom:11
   });
 
-  /* OPENFREEMAP BRIGHT */
-
   L.maplibreGL({
     style:
       'https://tiles.openfreemap.org/styles/bright'
@@ -528,7 +559,16 @@ function initMap(){
 
   setTimeout(()=>{
     map.invalidateSize();
-  },500);
+  },700);
+}
+
+/* SORT ORDER */
+
+function statusOrder(status){
+
+  if(status === 'on') return 1;
+  if(status === 'off') return 2;
+  return 3;
 }
 
 /* MARKER SVG */
@@ -615,6 +655,11 @@ function renderMarkers(){
       return;
     }
 
+    const updated =
+      f.last_updated ||
+      f.updated ||
+      'Unknown';
+
     const marker = L.marker(
       [Number(f.lat), Number(f.lon)],
       {
@@ -630,22 +675,30 @@ function renderMarkers(){
       }
     )
     .bindPopup(`
-      <strong>${f.name}</strong>
-      <br><br>
-      ${
-        f.status === 'on'
-          ? '✓ Open'
-          : f.status === 'off'
-            ? '✕ Closed'
-            : '– No data'
-      }
+      <div class="popup-title">
+        ${f.name}
+      </div>
+
+      <div class="popup-status">
+        ${
+          f.status === 'on'
+            ? '✓ Open'
+            : f.status === 'off'
+              ? '✕ Closed'
+              : '– No data'
+        }
+      </div>
+
+      <div class="popup-updated">
+        Last updated: ${updated}
+      </div>
     `);
 
     markers[f.name] = marker;
   });
 }
 
-/* LIST */
+/* RENDER LIST */
 
 function renderList(){
 
@@ -659,19 +712,32 @@ function renderList(){
     document.getElementById('list');
 
   const filtered =
-    fountains.filter(f => {
+    fountains
+      .filter(f => {
 
-      if(
-        currentFilter !== 'all' &&
-        f.status !== currentFilter
-      ){
-        return false;
-      }
+        if(
+          currentFilter !== 'all' &&
+          f.status !== currentFilter
+        ){
+          return false;
+        }
 
-      return f.name
-        .toLowerCase()
-        .includes(search);
-    });
+        return f.name
+          .toLowerCase()
+          .includes(search);
+      })
+      .sort((a,b)=>{
+
+        const orderDiff =
+          statusOrder(a.status) -
+          statusOrder(b.status);
+
+        if(orderDiff !== 0){
+          return orderDiff;
+        }
+
+        return a.name.localeCompare(b.name);
+      });
 
   list.innerHTML =
     filtered.map(f => {
@@ -798,6 +864,12 @@ async function loadData(){
           ).toLocaleString('en-GB')
         : 'Live data loaded';
 
+    /* IMPORTANT MOBILE FIX */
+
+    setTimeout(()=>{
+      map.invalidateSize();
+    },1000);
+
   }catch(err){
 
     console.error(err);
@@ -851,14 +923,32 @@ document
     renderList
   );
 
-/* MOBILE FIX */
+/* MOBILE FIXES */
+
+window.addEventListener(
+  'load',
+  ()=>{
+    setTimeout(()=>{
+      map.invalidateSize();
+    },1200);
+  }
+);
 
 window.addEventListener(
   'resize',
   ()=>{
     setTimeout(()=>{
       map.invalidateSize();
-    },500);
+    },700);
+  }
+);
+
+window.addEventListener(
+  'orientationchange',
+  ()=>{
+    setTimeout(()=>{
+      map.invalidateSize();
+    },1000);
   }
 );
 
