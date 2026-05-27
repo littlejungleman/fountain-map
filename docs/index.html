@@ -403,7 +403,7 @@ header{
     drop-shadow(0 4px 8px rgba(0,0,0,.24));
 }
 
-/* POPUP */
+/* POPUPS */
 
 .leaflet-popup-content-wrapper{
   border-radius:18px !important;
@@ -732,14 +732,13 @@ function initMap(){
     position:'bottomright'
   }).addTo(map);
 
-  /* JAWG SUNNY */
+  /* OPENFREEMAP BRIGHT */
 
   L.tileLayer(
-    'https://tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=anonymous',
+    'https://tiles.openfreemap.org/bright/{z}/{x}/{y}.png',
     {
       attribution:
-        '&copy; OpenStreetMap &copy; Jawg',
-      subdomains:'abcd',
+        '&copy; OpenStreetMap contributors &copy; OpenFreeMap',
       maxZoom:20
     }
   ).addTo(map);
