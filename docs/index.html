@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+
 <meta
   name="viewport"
   content="width=device-width, initial-scale=1.0"
@@ -31,11 +32,10 @@
   --off:#ef4444;
   --unk:#94a3b8;
 
-  --bg:#eff8ff;
   --text:#0f172a;
   --muted:#64748b;
 
-  --card:rgba(255,255,255,.78);
+  --card:rgba(255,255,255,.82);
 
   --shadow:
     0 10px 30px rgba(15,23,42,.10),
@@ -69,21 +69,22 @@ body{
 /* HEADER */
 
 header{
-  background:linear-gradient(
-    135deg,
-    #0f4c81 0%,
-    #0ea5e9 100%
-  );
+  background:
+    linear-gradient(
+      135deg,
+      #0f4c81 0%,
+      #0ea5e9 100%
+    );
 
   color:white;
 
   padding:14px 18px;
 
-  box-shadow:
-    0 6px 20px rgba(14,165,233,.24);
-
   position:relative;
   z-index:1000;
+
+  box-shadow:
+    0 6px 20px rgba(14,165,233,.24);
 }
 
 .logo{
@@ -97,15 +98,16 @@ header{
 }
 
 .subtitle{
+  margin-top:2px;
+
   font-size:.76rem;
   opacity:.92;
-  margin-top:2px;
 }
 
-/* INFO */
+/* INFO BAR */
 
 #info-bar{
-  background:rgba(255,255,255,.74);
+  background:rgba(255,255,255,.76);
 
   backdrop-filter:blur(12px);
 
@@ -118,7 +120,8 @@ header{
 
   font-size:.76rem;
 
-  border-bottom:1px solid rgba(255,255,255,.7);
+  border-bottom:
+    1px solid rgba(255,255,255,.7);
 }
 
 #info-bar a{
@@ -140,14 +143,15 @@ header{
   width:340px;
   min-width:300px;
 
+  display:flex;
+  flex-direction:column;
+
   background:var(--card);
 
   backdrop-filter:blur(14px);
 
-  border-right:1px solid rgba(255,255,255,.5);
-
-  display:flex;
-  flex-direction:column;
+  border-right:
+    1px solid rgba(255,255,255,.5);
 
   box-shadow:var(--shadow);
 
@@ -166,13 +170,13 @@ header{
   border:none;
   border-radius:16px;
 
-  font-family:inherit;
-  font-size:.92rem;
-
   background:
     white
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z' clip-rule='evenodd'/%3E%3C/svg%3E")
     12px center/18px no-repeat;
+
+  font-family:inherit;
+  font-size:.92rem;
 
   outline:none;
 
@@ -202,9 +206,9 @@ header{
 
   border-radius:14px;
 
-  cursor:pointer;
-
   background:white;
+
+  cursor:pointer;
 
   font-family:inherit;
   font-size:.74rem;
@@ -247,7 +251,7 @@ header{
 .stat-pill{
   flex:1;
 
-  background:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.76);
 
   border-radius:14px;
 
@@ -266,11 +270,11 @@ header{
 }
 
 #fountain-list{
+  flex:1;
+
   overflow-y:auto;
 
   padding:0 10px 12px;
-
-  flex:1;
 }
 
 .fountain-item{
@@ -284,14 +288,14 @@ header{
 
   border-radius:16px;
 
-  background:rgba(255,255,255,.84);
+  background:rgba(255,255,255,.86);
 
   cursor:pointer;
 
   transition:
     transform .16s,
-    box-shadow .16s,
-    background .16s;
+    background .16s,
+    box-shadow .16s;
 }
 
 .fountain-item:hover{
@@ -315,12 +319,12 @@ header{
 }
 
 .fi-badge{
-  font-size:.68rem;
-  font-weight:700;
-
   padding:5px 9px;
 
   border-radius:999px;
+
+  font-size:.68rem;
+  font-weight:700;
 }
 
 .badge-on{
@@ -356,8 +360,8 @@ header{
 .map-note{
   position:absolute;
 
-  bottom:10px;
   left:10px;
+  bottom:10px;
 
   z-index:1000;
 
@@ -371,7 +375,7 @@ header{
 
   font-size:.64rem;
 
-  opacity:.72;
+  opacity:.74;
 
   box-shadow:var(--shadow);
 }
@@ -379,8 +383,8 @@ header{
 /* MARKERS */
 
 .pin{
-  width:34px;
-  height:34px;
+  width:36px;
+  height:36px;
 
   transition:
     transform .15s,
@@ -388,7 +392,7 @@ header{
 }
 
 .pin:hover{
-  transform:scale(1.12);
+  transform:scale(1.1);
 }
 
 .pin svg{
@@ -494,6 +498,7 @@ header{
   margin-top:12px;
 
   font-family:'Fredoka',sans-serif;
+
   color:var(--water-dark);
 }
 
@@ -501,15 +506,22 @@ header{
 
 @media (max-width:700px){
 
+  html,
   body{
+    height:auto;
     overflow:auto;
   }
 
+  body{
+    overflow-x:hidden;
+  }
+
   .main-layout{
+    display:flex;
     flex-direction:column;
 
     height:auto;
-    min-height:calc(100vh - 103px);
+    min-height:auto;
   }
 
   /* MAP FIRST */
@@ -517,27 +529,48 @@ header{
   .map-wrap{
     order:1;
 
-    height:56vh;
-    min-height:360px;
-
     width:100%;
+
+    height:58vh;
+    min-height:420px;
+
+    flex:none;
   }
+
+  #map{
+    width:100%;
+    height:100%;
+  }
+
+  /* SIDEBAR SECOND */
 
   #sidebar{
     order:2;
 
     width:100%;
-    min-width:unset;
+    min-width:100%;
+
+    flex:none;
 
     border-radius:24px 24px 0 0;
 
-    margin-top:-14px;
+    margin-top:-16px;
 
-    overflow:hidden;
+    overflow:visible;
   }
 
   #fountain-list{
-    max-height:50vh;
+    overflow:visible;
+    max-height:none;
+  }
+
+  .stats-row{
+    padding-bottom:10px;
+  }
+
+  .map-note{
+    left:10px;
+    bottom:10px;
   }
 }
 
@@ -699,23 +732,32 @@ function initMap(){
     position:'bottomright'
   }).addTo(map);
 
-  /* FREE CARTO TILES */
+  /* JAWG SUNNY */
 
   L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    'https://tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=anonymous',
     {
       attribution:
-        '&copy; OpenStreetMap &copy; CARTO',
+        '&copy; OpenStreetMap &copy; Jawg',
       subdomains:'abcd',
       maxZoom:20
     }
   ).addTo(map);
 
-  /* FIX MOBILE RENDER */
+  refreshMapSize();
+}
+
+/* MAP REFRESH */
+
+function refreshMapSize(){
 
   setTimeout(()=>{
     map.invalidateSize();
-  },200);
+  },100);
+
+  setTimeout(()=>{
+    map.invalidateSize();
+  },500);
 }
 
 /* ESCAPE */
@@ -750,7 +792,7 @@ function fmtTime(iso){
   }
 }
 
-/* SVG MARKER */
+/* MARKERS */
 
 function markerSvg(status){
 
@@ -768,7 +810,6 @@ function markerSvg(status){
   }
 
   return `
-
     <div class="pin">
 
       <svg viewBox="0 0 64 64">
@@ -811,15 +852,15 @@ function makeIcon(status){
 
     html:markerSvg(status),
 
-    iconSize:[34,34],
+    iconSize:[36,36],
 
-    iconAnchor:[17,34],
+    iconAnchor:[18,36],
 
-    popupAnchor:[0,-28]
+    popupAnchor:[0,-30]
   });
 }
 
-/* POPUP */
+/* POPUPS */
 
 function popupHtml(f){
 
@@ -849,13 +890,11 @@ function popupHtml(f){
       </div>
 
       <div class="popup-time">
-
         ${
           f.reported_at
             ? `Updated ${fmtTime(f.reported_at)}`
             : 'No reports yet'
         }
-
       </div>
 
     </div>
@@ -881,8 +920,11 @@ function renderMarkers(fountains){
       return;
     }
 
+    const lat = Number(f.lat);
+    const lon = Number(f.lon);
+
     const marker = L.marker(
-      [Number(f.lat), Number(f.lon)],
+      [lat, lon],
       {
         icon:makeIcon(f.status)
       }
@@ -915,9 +957,10 @@ function renderMarkers(fountains){
 
 function renderList(fountains){
 
-  const el = document.getElementById(
-    'fountain-list'
-  );
+  const el =
+    document.getElementById(
+      'fountain-list'
+    );
 
   if(!fountains.length){
 
@@ -949,7 +992,6 @@ function renderList(fountains){
         : '';
 
     return `
-
       <div
         class="fountain-item${selected}"
         onclick='selectFountain(${JSON.stringify(f.name)}, true)'
@@ -964,7 +1006,6 @@ function renderList(fountains){
         </div>
 
       </div>
-
     `;
 
   }).join('');
@@ -993,6 +1034,8 @@ function selectFountain(name,fromList=true){
   const lat = Number(f.lat);
   const lon = Number(f.lon);
 
+  refreshMapSize();
+
   map.flyTo(
     [lat, lon],
     17,
@@ -1009,7 +1052,7 @@ function selectFountain(name,fromList=true){
 
   },700);
 
-  /* MOBILE SCROLL TO MAP */
+  /* MOBILE SCROLL */
 
   if(
     fromList &&
@@ -1024,14 +1067,15 @@ function selectFountain(name,fromList=true){
   }
 }
 
-/* FILTER */
+/* FILTERS */
 
 function getFiltered(){
 
   const q =
-    document.getElementById('search')
-    .value
-    .toLowerCase();
+    document
+      .getElementById('search')
+      .value
+      .toLowerCase();
 
   return allFountains.filter(f => {
 
@@ -1183,9 +1227,7 @@ async function loadData(){
       'loading'
     ).style.display='none';
 
-    setTimeout(()=>{
-      map.invalidateSize();
-    },300);
+    refreshMapSize();
   }
 }
 
@@ -1193,15 +1235,22 @@ initMap();
 
 loadData();
 
-/* MOBILE RESIZE FIX */
+/* MOBILE FIXES */
 
-window.addEventListener('resize',()=>{
+window.addEventListener(
+  'resize',
+  refreshMapSize
+);
 
-  setTimeout(()=>{
-    map.invalidateSize();
-  },200);
+window.addEventListener(
+  'orientationchange',
+  refreshMapSize
+);
 
-});
+window.addEventListener(
+  'load',
+  refreshMapSize
+);
 
 </script>
 
