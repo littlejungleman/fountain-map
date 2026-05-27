@@ -102,16 +102,50 @@ def parse_dt(s: str) -> datetime:
 
 def extract_wdt_config(html: str) -> tuple:
     table_id, nonce = None, None
-    for pat in [r'"table_id"\s*:\s*"?(\d+)"?', r'wpdatatable_id["\s]*:["\s]*(\d+)', r'tableId["\s]*:["\s]*(\d+)']:
+
+    # Try many patterns — wpDataTables embeds the table ID in various ways
+    # depending on version and table type
+    id_patterns = [
+        r'"table_id"\s*:\s*"?(\d+)"?',       # JS config object
+        r'wpdatatable_id["\s]*:["\s]*(\d+)',  # older var name
+        r'tableId["\s]*:["\s]*(\d+)',         # camelCase
+        r'data-table-id="(\d+)"',             # HTML data attribute
+        r'data-wpdtid="(\d+)"',               # wpdt-c div
+        r'wpdatatable_(\d+)',                  # table element ID
+        r'#wdt-table-id-(\d+)',               # jQuery selector in JS
+        r'wpDataTablesGrid\[(\d+)\]',         # grid tables
+        r'wdt-table-id-(\d+)',                # class/id fragment
+        r'"id"\s*:\s*(\d+)[,}]',             # generic id in JS object near wpdatatable
+    ]
+    for pat in id_patterns:
         m = re.search(pat, html, re.IGNORECASE)
         if m:
             table_id = m.group(1)
+            print(f"  Found table_id={table_id} via pattern: {pat}")
             break
-    for pat in [r'"nonce"\s*:\s*"([a-f0-9]{10})"', r'wdtNonce["\s]*:["\s]*"([a-f0-9]{10})"', r'"nonce":"([^"]+)"']:
+
+    # Nonce patterns
+    nonce_patterns = [
+        r'"nonce"\s*:\s*"([a-f0-9]{10})"',
+        r'wdtNonce["\s]*:["\s]*"([a-f0-9]{10})"',
+        r'"nonce"\s*:\s*"([^"]{6,20})"',
+        r"'nonce'\s*:\s*'([^']{6,20})'",
+    ]
+    for pat in nonce_patterns:
         m = re.search(pat, html)
         if m:
             nonce = m.group(1)
             break
+
+    # If still no table_id, log a snippet to help diagnose
+    if not table_id:
+        # Find any mention of wpdatatable in the page to help debug
+        for kw in ['wpdatatable', 'wpdt', 'wdt-table', 'datatables']:
+            idx = html.lower().find(kw)
+            if idx >= 0:
+                print(f"  Found '{kw}' at pos {idx}: {html[max(0,idx-20):idx+80]!r}")
+                break
+
     return table_id, nonce
 
 
@@ -226,9 +260,14 @@ def get_live_statuses(html: str) -> dict:
     table_id, nonce = extract_wdt_config(html)
     print(f"  wpDataTables config: table_id={table_id}, nonce={nonce}")
     if not table_id:
-        print("  Could not find table_id — trying to parse HTML table directly as fallback", file=sys.stderr)
-        # Last resort: try HTML parsing even though it only gets visible rows
-        # Better than nothing if AJAX config is unavailable
+        print("  Could not find table_id in page JS — trying hardcoded IDs 1-5", file=sys.stderr)
+        for try_id in ["1", "2", "3", "4", "5"]:
+            print(f"  Trying table_id={try_id}...")
+            result = get_live_statuses_ajax(try_id, nonce)
+            if result:
+                print(f"  Success with table_id={try_id} — add this as HARDCODED_TABLE_ID in scrape.py")
+                return result
+        print("  All table_id attempts failed, falling back to HTML", file=sys.stderr)
         return get_live_statuses_html(html)
     statuses = get_live_statuses_ajax(table_id, nonce)
     if not statuses:
