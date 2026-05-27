@@ -2,14 +2,35 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
 
 <title>London Fountain Map</title>
+
+<!-- LEAFLET -->
 
 <link
   rel="stylesheet"
   href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- MAPLIBRE -->
+
+<link
+  href="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css"
+  rel="stylesheet"
+/>
+
+<script src="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
+
+<!-- MAPLIBRE + LEAFLET -->
+
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.24/leaflet-maplibre-gl.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 
@@ -27,8 +48,6 @@
   --green:#16a34a;
   --red:#ef4444;
   --grey:#94a3b8;
-
-  --bg:#f0f9ff;
 }
 
 *{
@@ -44,12 +63,10 @@ body{
 
 body{
   font-family:'DM Sans',sans-serif;
+
   overflow:hidden;
 
-  background:
-    radial-gradient(circle at top left,#dbeafe 0%,transparent 30%),
-    radial-gradient(circle at bottom right,#bfdbfe 0%,transparent 30%),
-    var(--bg);
+  background:#f0f9ff;
 }
 
 /* HEADER */
@@ -85,12 +102,10 @@ header{
   font-size:.8rem;
 }
 
-/* INFO */
+/* INFO BAR */
 
 .info-bar{
-  background:rgba(255,255,255,.82);
-
-  backdrop-filter:blur(10px);
+  background:white;
 
   padding:10px 14px;
 
@@ -99,11 +114,11 @@ header{
   font-size:.78rem;
 
   border-bottom:
-    1px solid rgba(255,255,255,.6);
+    1px solid #e2e8f0;
 }
 
 .info-bar a{
-  color:var(--blue-dark);
+  color:#0f4c81;
   font-weight:700;
 }
 
@@ -111,6 +126,7 @@ header{
 
 .layout{
   display:flex;
+
   height:calc(100vh - 104px);
 }
 
@@ -120,17 +136,16 @@ header{
   width:340px;
   min-width:300px;
 
-  background:rgba(255,255,255,.82);
-
-  backdrop-filter:blur(14px);
-
-  border-right:
-    1px solid rgba(255,255,255,.5);
+  background:
+    rgba(255,255,255,.92);
 
   overflow:hidden;
 
   display:flex;
   flex-direction:column;
+
+  border-right:
+    1px solid #e2e8f0;
 }
 
 .sidebar-top{
@@ -147,7 +162,7 @@ header{
 
   border-radius:16px;
 
-  background:white;
+  background:#f8fafc;
 
   font-size:.92rem;
 }
@@ -174,16 +189,12 @@ header{
   font-weight:700;
   font-size:.72rem;
 
-  background:white;
+  background:#f1f5f9;
 
   transition:.15s;
 }
 
-.filters button:hover{
-  transform:translateY(-1px);
-}
-
-.filters .active{
+.filters button.active{
   background:#dbeafe;
   color:#0f4c81;
 }
@@ -205,6 +216,9 @@ header{
   text-align:center;
 
   padding:10px;
+
+  border:
+    1px solid #e2e8f0;
 }
 
 .stat strong{
@@ -239,6 +253,9 @@ header{
   cursor:pointer;
 
   transition:.16s;
+
+  border:
+    1px solid #e2e8f0;
 }
 
 .item:hover{
@@ -291,12 +308,6 @@ header{
   height:100%;
 }
 
-/* IMPORTANT */
-
-.leaflet-container{
-  background:#dbeafe;
-}
-
 .note{
   position:absolute;
 
@@ -305,17 +316,17 @@ header{
 
   z-index:1000;
 
-  background:rgba(255,255,255,.82);
-
-  backdrop-filter:blur(10px);
-
-  border-radius:999px;
+  background:
+    rgba(255,255,255,.9);
 
   padding:5px 10px;
 
+  border-radius:999px;
+
   font-size:.68rem;
 
-  opacity:.8;
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.08);
 }
 
 /* MARKERS */
@@ -361,9 +372,9 @@ header{
     width:100%;
     min-width:100%;
 
-    border-radius:24px 24px 0 0;
-
     margin-top:-16px;
+
+    border-radius:24px 24px 0 0;
   }
 
   .list{
@@ -397,6 +408,7 @@ header{
   •
 
   Data from
+
   <a
     href="https://bablands.com/fountainwatch/"
     target="_blank"
@@ -423,7 +435,10 @@ header{
 
       <div class="filters">
 
-        <button class="active" data-filter="all">
+        <button
+          class="active"
+          data-filter="all"
+        >
           All
         </button>
 
@@ -483,8 +498,6 @@ header{
 
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
 
 let map;
@@ -501,16 +514,12 @@ function initMap(){
     zoom:11
   });
 
-  /* OPENFREEMAP BRIGHT */
+  /* OFFICIAL OPENFREEMAP METHOD */
 
-  L.tileLayer(
-    'https://tiles.openfreemap.org/styles/bright/{z}/{x}/{y}.png',
-    {
-      attribution:
-        '&copy; OpenStreetMap contributors &copy; OpenFreeMap',
-      maxZoom:20
-    }
-  ).addTo(map);
+  L.maplibreGL({
+    style:
+      'https://tiles.openfreemap.org/styles/bright'
+  }).addTo(map);
 
   setTimeout(()=>{
     map.invalidateSize();
@@ -569,8 +578,6 @@ function markerSVG(status){
   `;
 }
 
-/* ICON */
-
 function makeIcon(status){
 
   return L.divIcon({
@@ -582,7 +589,7 @@ function makeIcon(status){
   });
 }
 
-/* RENDER MAP */
+/* RENDER MARKERS */
 
 function renderMarkers(){
 
@@ -796,7 +803,7 @@ async function loadData(){
   }
 }
 
-/* FILTER BUTTONS */
+/* FILTERS */
 
 document.addEventListener(
   'click',
