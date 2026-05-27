@@ -656,9 +656,12 @@ function renderMarkers(){
     }
 
     const updated =
-      f.last_updated ||
-      f.updated ||
-      'Unknown';
+  f.last_checked ||
+  f.lastUpdated ||
+  f.last_updated ||
+  f.updated ||
+  f.timestamp ||
+  'Unknown';
 
     const marker = L.marker(
       [Number(f.lat), Number(f.lon)],
@@ -690,8 +693,13 @@ function renderMarkers(){
       </div>
 
       <div class="popup-updated">
-        Last updated: ${updated}
-      </div>
+  Last updated:
+  ${
+    updated !== 'Unknown'
+      ? new Date(updated).toLocaleString('en-GB')
+      : 'Unknown'
+  }
+</div>
     `);
 
     markers[f.name] = marker;
