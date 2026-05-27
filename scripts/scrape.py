@@ -116,7 +116,9 @@ def get_live_statuses(html: str) -> dict:
     total_rows = 0
 
     for table in soup.find_all("table"):
-        for row in table.find_all("tr"):
+        all_trs = table.find_all("tr")
+        print(f"  Table has {len(all_trs)} <tr> elements in DOM (including header)")
+        for row in all_trs:
             cols = [td.get_text(strip=True) for td in row.find_all(["td", "th"])]
             if len(cols) < 3:
                 continue
@@ -132,10 +134,15 @@ def get_live_statuses(html: str) -> dict:
             if name not in entries or dt > entries[name]["dt"]:
                 entries[name] = {"status": status, "reported_at": iso, "dt": dt}
 
+    # Also check if wpDataTables reports a total count in the page
+    total_match = re.search(r'"iTotalRecords"\s*:\s*(\d+)|"recordsTotal"\s*:\s*(\d+)|(\d+)\s+entries', html)
+    if total_match:
+        reported_total = next(g for g in total_match.groups() if g)
+        print(f"  wpDataTables reports {reported_total} total records")
+        if int(reported_total) > total_rows:
+            print(f"  WARNING: only got {total_rows} rows from HTML but table has {reported_total} total — server-side pagination is hiding rows")
+
     print(f"  Parsed {total_rows} rows -> {len(entries)} unique fountains")
-    print("  Names found in table:")
-    for n in sorted(entries.keys()):
-        print(f"    {repr(n)}")
     return {k: {"status": v["status"], "reported_at": v["reported_at"]} for k, v in entries.items()}
 
 
