@@ -656,12 +656,13 @@ function renderMarkers(){
     }
 
     const updated =
-  f.last_checked ||
-  f.lastUpdated ||
+  f.last_status_change ||
+  f.last_report ||
+  f.lastUpdate ||
   f.last_updated ||
+  f.updated_at ||
   f.updated ||
-  f.timestamp ||
-  'Unknown';
+  '';
 
     const marker = L.marker(
       [Number(f.lat), Number(f.lon)],
@@ -678,29 +679,31 @@ function renderMarkers(){
       }
     )
     .bindPopup(`
-      <div class="popup-title">
-        ${f.name}
-      </div>
+  <div class="popup-title">
+    ${f.name}
+  </div>
 
-      <div class="popup-status">
-        ${
-          f.status === 'on'
-            ? '✓ Open'
-            : f.status === 'off'
-              ? '✕ Closed'
-              : '– No data'
-        }
-      </div>
+  <div class="popup-status">
+    ${
+      f.status === 'on'
+        ? '✓ Open'
+        : f.status === 'off'
+          ? '✕ Closed'
+          : '– No data'
+    }
+  </div>
 
-      <div class="popup-updated">
-  Last updated:
   ${
-    updated !== 'Unknown'
-      ? new Date(updated).toLocaleString('en-GB')
-      : 'Unknown'
+    updated
+      ? `
+        <div class="popup-updated">
+          Last updated:
+          ${updated}
+        </div>
+      `
+      : ''
   }
-</div>
-    `);
+`);
 
     markers[f.name] = marker;
   });
