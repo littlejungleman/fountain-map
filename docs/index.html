@@ -2,13 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
-/>
-
-<title>London Fountain Map 💧</title>
+<title>London Fountain Map</title>
 
 <link
   rel="stylesheet"
@@ -25,21 +21,14 @@
 <style>
 
 :root{
-  --water:#38bdf8;
-  --water-dark:#0f4c81;
+  --blue:#0ea5e9;
+  --blue-dark:#0f4c81;
 
-  --on:#16a34a;
-  --off:#ef4444;
-  --unk:#94a3b8;
+  --green:#16a34a;
+  --red:#ef4444;
+  --grey:#94a3b8;
 
-  --text:#0f172a;
-  --muted:#64748b;
-
-  --card:rgba(255,255,255,.84);
-
-  --shadow:
-    0 10px 30px rgba(15,23,42,.10),
-    0 2px 8px rgba(15,23,42,.06);
+  --bg:#f0f9ff;
 }
 
 *{
@@ -55,15 +44,12 @@ body{
 
 body{
   font-family:'DM Sans',sans-serif;
+  overflow:hidden;
 
   background:
-    radial-gradient(circle at top left,#dbeafe 0%,transparent 35%),
+    radial-gradient(circle at top left,#dbeafe 0%,transparent 30%),
     radial-gradient(circle at bottom right,#bfdbfe 0%,transparent 30%),
-    linear-gradient(180deg,#f0f9ff 0%,#e0f2fe 100%);
-
-  color:var(--text);
-
-  overflow:hidden;
+    var(--bg);
 }
 
 /* HEADER */
@@ -78,257 +64,217 @@ header{
 
   color:white;
 
-  padding:14px 18px;
+  padding:16px 18px;
+
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.12);
 
   position:relative;
   z-index:1000;
-
-  box-shadow:
-    0 6px 20px rgba(14,165,233,.24);
 }
 
 .logo{
   font-family:'Fredoka',sans-serif;
-  font-size:1.5rem;
+  font-size:1.6rem;
   font-weight:700;
-}
-
-.logo span{
-  color:#dbeafe;
 }
 
 .subtitle{
   margin-top:2px;
-
-  font-size:.76rem;
   opacity:.92;
+  font-size:.8rem;
 }
 
-/* INFO BAR */
+/* INFO */
 
-#info-bar{
-  background:rgba(255,255,255,.76);
+.info-bar{
+  background:rgba(255,255,255,.82);
 
-  backdrop-filter:blur(12px);
+  backdrop-filter:blur(10px);
 
-  padding:8px 14px;
+  padding:10px 14px;
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
+  text-align:center;
 
-  font-size:.76rem;
+  font-size:.78rem;
 
   border-bottom:
-    1px solid rgba(255,255,255,.7);
+    1px solid rgba(255,255,255,.6);
 }
 
-#info-bar a{
-  color:var(--water-dark);
+.info-bar a{
+  color:var(--blue-dark);
   font-weight:700;
 }
 
 /* LAYOUT */
 
-.main-layout{
+.layout{
   display:flex;
-
-  height:calc(100vh - 103px);
+  height:calc(100vh - 104px);
 }
 
 /* SIDEBAR */
 
-#sidebar{
+.sidebar{
   width:340px;
   min-width:300px;
 
-  display:flex;
-  flex-direction:column;
-
-  background:var(--card);
+  background:rgba(255,255,255,.82);
 
   backdrop-filter:blur(14px);
 
   border-right:
     1px solid rgba(255,255,255,.5);
 
-  box-shadow:var(--shadow);
+  overflow:hidden;
 
-  z-index:500;
+  display:flex;
+  flex-direction:column;
 }
 
-.sidebar-header{
+.sidebar-top{
   padding:16px;
 }
 
-#search{
+.search{
   width:100%;
 
-  padding:12px 14px 12px 40px;
+  padding:12px 14px;
 
   border:none;
+  outline:none;
+
   border-radius:16px;
 
-  background:
-    white
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z' clip-rule='evenodd'/%3E%3C/svg%3E")
-    12px center/18px no-repeat;
+  background:white;
 
-  font-family:inherit;
   font-size:.92rem;
-
-  outline:none;
 }
 
-.filter-tabs{
+.filters{
   display:flex;
   gap:8px;
 
   margin-top:12px;
 }
 
-.filter-tab{
+.filters button{
   flex:1;
 
   border:none;
 
-  padding:10px 6px;
+  border-radius:12px;
 
-  border-radius:14px;
-
-  background:white;
+  padding:10px;
 
   cursor:pointer;
 
   font-family:inherit;
-  font-size:.74rem;
   font-weight:700;
+  font-size:.72rem;
 
-  transition:.16s;
+  background:white;
+
+  transition:.15s;
 }
 
-.filter-tab:hover{
+.filters button:hover{
   transform:translateY(-1px);
 }
 
-.active-all{
+.filters .active{
   background:#dbeafe;
   color:#0f4c81;
 }
 
-.active-on{
-  background:#dcfce7;
-  color:#166534;
-}
-
-.active-off{
-  background:#fee2e2;
-  color:#991b1b;
-}
-
-.active-unk{
-  background:#e2e8f0;
-  color:#475569;
-}
-
-.stats-row{
+.stats{
   display:flex;
   gap:10px;
 
   padding:0 16px 14px;
 }
 
-.stat-pill{
+.stat{
   flex:1;
 
-  background:rgba(255,255,255,.76);
+  background:white;
 
   border-radius:14px;
 
-  padding:10px;
-
   text-align:center;
+
+  padding:10px;
 }
 
-.count{
+.stat strong{
   display:block;
 
-  font-family:'Fredoka',sans-serif;
   font-size:1.2rem;
 
-  margin-bottom:3px;
+  font-family:'Fredoka',sans-serif;
 }
 
-#fountain-list{
+.list{
   flex:1;
 
   overflow-y:auto;
 
-  padding:0 10px 12px;
+  padding:0 10px 10px;
 }
 
-.fountain-item{
+.item{
   display:flex;
   align-items:center;
   gap:10px;
+
+  background:white;
+
+  border-radius:16px;
 
   padding:12px 14px;
 
   margin-bottom:10px;
 
-  border-radius:16px;
-
-  background:rgba(255,255,255,.86);
-
   cursor:pointer;
 
-  transition:
-    transform .16s,
-    background .16s,
-    box-shadow .16s;
+  transition:.16s;
 }
 
-.fountain-item:hover{
+.item:hover{
   transform:translateY(-2px);
-
-  background:white;
 
   box-shadow:
     0 10px 18px rgba(14,165,233,.10);
 }
 
-.fountain-item.selected{
-  background:#dbeafe;
-}
-
-.fi-name{
+.item-name{
   flex:1;
 
-  font-size:.88rem;
+  font-size:.9rem;
   font-weight:600;
 }
 
-.fi-badge{
-  padding:5px 9px;
-
+.badge{
   border-radius:999px;
+
+  padding:5px 9px;
 
   font-size:.68rem;
   font-weight:700;
 }
 
-.badge-on{
+.badge-open{
   background:#dcfce7;
   color:#166534;
 }
 
-.badge-off{
+.badge-closed{
   background:#fee2e2;
   color:#991b1b;
 }
 
-.badge-unk{
+.badge-unknown{
   background:#e2e8f0;
   color:#475569;
 }
@@ -337,10 +283,7 @@ header{
 
 .map-wrap{
   flex:1;
-
   position:relative;
-
-  min-width:0;
 }
 
 #map{
@@ -348,13 +291,13 @@ header{
   height:100%;
 }
 
-/* IMPORTANT FIX */
+/* IMPORTANT */
 
 .leaflet-container{
-  background:#dbeafe !important;
+  background:#dbeafe;
 }
 
-.map-note{
+.note{
   position:absolute;
 
   left:10px;
@@ -366,30 +309,20 @@ header{
 
   backdrop-filter:blur(10px);
 
-  padding:5px 10px;
-
   border-radius:999px;
 
-  font-size:.64rem;
+  padding:5px 10px;
 
-  opacity:.74;
+  font-size:.68rem;
 
-  box-shadow:var(--shadow);
+  opacity:.8;
 }
 
 /* MARKERS */
 
 .pin{
-  width:36px;
-  height:36px;
-
-  transition:
-    transform .15s,
-    filter .15s;
-}
-
-.pin:hover{
-  transform:scale(1.08);
+  width:38px;
+  height:38px;
 }
 
 .pin svg{
@@ -400,133 +333,41 @@ header{
     drop-shadow(0 4px 8px rgba(0,0,0,.24));
 }
 
-/* POPUP */
-
-.leaflet-popup-content-wrapper{
-  border-radius:18px !important;
-}
-
-.popup-inner{
-  min-width:180px;
-}
-
-.popup-name{
-  font-family:'Fredoka',sans-serif;
-  font-size:1rem;
-  font-weight:600;
-
-  margin-bottom:10px;
-}
-
-.popup-status{
-  display:inline-flex;
-
-  padding:5px 12px;
-
-  border-radius:999px;
-
-  font-size:.78rem;
-  font-weight:700;
-}
-
-.ps-on{
-  background:#dcfce7;
-  color:#166534;
-}
-
-.ps-off{
-  background:#fee2e2;
-  color:#991b1b;
-}
-
-.ps-unk{
-  background:#e2e8f0;
-  color:#475569;
-}
-
-/* LOADING */
-
-#loading{
-  position:absolute;
-  inset:0;
-
-  background:rgba(240,249,255,.82);
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-
-  z-index:2000;
-}
-
-.spinner{
-  width:42px;
-  height:42px;
-
-  border:4px solid #bae6fd;
-  border-top-color:var(--water);
-
-  border-radius:50%;
-
-  animation:spin .8s linear infinite;
-}
-
-@keyframes spin{
-  to{
-    transform:rotate(360deg);
-  }
-}
-
 /* MOBILE */
 
 @media (max-width:700px){
 
   html,
   body{
-    height:auto;
     overflow:auto;
+    height:auto;
   }
 
-  body{
-    overflow-x:hidden;
-  }
-
-  .main-layout{
+  .layout{
     flex-direction:column;
-
     height:auto;
   }
 
   .map-wrap{
     order:1;
 
-    width:100%;
-
-    height:56vh;
+    height:58vh;
     min-height:420px;
-
-    flex:none;
   }
 
-  #sidebar{
+  .sidebar{
     order:2;
 
     width:100%;
     min-width:100%;
 
-    flex:none;
-
     border-radius:24px 24px 0 0;
 
     margin-top:-16px;
-
-    overflow:visible;
   }
 
-  #fountain-list{
+  .list{
     overflow:visible;
-    max-height:none;
   }
 }
 
@@ -538,7 +379,7 @@ header{
 <header>
 
   <div class="logo">
-    💧 <span>London</span> Fountain Map
+    💧 London Fountain Map
   </div>
 
   <div class="subtitle">
@@ -547,66 +388,54 @@ header{
 
 </header>
 
-<div id="info-bar">
+<div class="info-bar">
 
-  <span id="updated-text">
-    Loading fountain status...
+  <span id="updated">
+    Loading fountain data...
   </span>
 
-  <span>•</span>
+  •
 
-  <span>
-    Data from
-    <a
-      href="https://bablands.com/fountainwatch/"
-      target="_blank"
-    >
-      bablands.com
-    </a>
-  </span>
+  Data from
+  <a
+    href="https://bablands.com/fountainwatch/"
+    target="_blank"
+  >
+    bablands.com
+  </a>
 
 </div>
 
-<div class="main-layout">
+<div class="layout">
 
-  <aside id="sidebar">
+  <!-- SIDEBAR -->
 
-    <div class="sidebar-header">
+  <aside class="sidebar">
+
+    <div class="sidebar-top">
 
       <input
         id="search"
+        class="search"
         type="search"
         placeholder="Search fountains..."
-        oninput="filterList()"
       >
 
-      <div class="filter-tabs">
+      <div class="filters">
 
-        <button
-          class="filter-tab active-all"
-          onclick="setFilter('all',this)"
-        >
+        <button class="active" data-filter="all">
           All
         </button>
 
-        <button
-          class="filter-tab"
-          onclick="setFilter('on',this)"
-        >
+        <button data-filter="on">
           ✓ Open
         </button>
 
-        <button
-          class="filter-tab"
-          onclick="setFilter('off',this)"
-        >
+        <button data-filter="off">
           ✕ Closed
         </button>
 
-        <button
-          class="filter-tab"
-          onclick="setFilter('unknown',this)"
-        >
+        <button data-filter="unknown">
           – No data
         </button>
 
@@ -614,41 +443,40 @@ header{
 
     </div>
 
-    <div class="stats-row">
+    <div class="stats">
 
-      <div class="stat-pill">
-        <span class="count" id="count-on">0</span>
+      <div class="stat">
+        <strong id="open-count">0</strong>
         Open
       </div>
 
-      <div class="stat-pill">
-        <span class="count" id="count-off">0</span>
+      <div class="stat">
+        <strong id="closed-count">0</strong>
         Closed
       </div>
 
-      <div class="stat-pill">
-        <span class="count" id="count-unk">0</span>
+      <div class="stat">
+        <strong id="unknown-count">0</strong>
         No data
       </div>
 
     </div>
 
-    <div id="fountain-list"></div>
+    <div
+      class="list"
+      id="list"
+    ></div>
 
   </aside>
+
+  <!-- MAP -->
 
   <div class="map-wrap">
 
     <div id="map"></div>
 
-    <div class="map-note">
+    <div class="note">
       📍 Locations approximate
-    </div>
-
-    <div id="loading">
-
-      <div class="spinner"></div>
-
     </div>
 
   </div>
@@ -659,82 +487,39 @@ header{
 
 <script>
 
-'use strict';
-
 let map;
-let allFountains = [];
+let fountains = [];
 let markers = {};
-
 let currentFilter = 'all';
-let selectedName = null;
 
-/* MAP */
+/* INIT MAP */
 
 function initMap(){
 
   map = L.map('map',{
     center:[51.505,-0.09],
-    zoom:11,
-    zoomControl:false
+    zoom:11
   });
 
-  L.control.zoom({
-    position:'bottomright'
-  }).addTo(map);
-
-  /* WORKING FREE TILE SERVER */
+  /* OPENFREEMAP BRIGHT */
 
   L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'https://tiles.openfreemap.org/styles/bright/{z}/{x}/{y}.png',
     {
       attribution:
-        '&copy; OpenStreetMap contributors',
-      maxZoom:19
+        '&copy; OpenStreetMap contributors &copy; OpenFreeMap',
+      maxZoom:20
     }
   ).addTo(map);
 
-  refreshMapSize();
-}
-
-/* FIXES */
-
-function refreshMapSize(){
-
   setTimeout(()=>{
     map.invalidateSize();
-  },100);
-
-  setTimeout(()=>{
-    map.invalidateSize();
-  },500);
+  },300);
 }
 
-window.addEventListener(
-  'resize',
-  refreshMapSize
-);
+/* MARKER SVG */
 
-window.addEventListener(
-  'orientationchange',
-  refreshMapSize
-);
-
-window.addEventListener(
-  'load',
-  refreshMapSize
-);
-
-/* HELPERS */
-
-function esc(s){
-
-  return s
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;');
-}
-
-function markerSvg(status){
+function markerSVG(status){
 
   let color = '#94a3b8';
   let symbol = '–';
@@ -784,61 +569,25 @@ function markerSvg(status){
   `;
 }
 
+/* ICON */
+
 function makeIcon(status){
 
   return L.divIcon({
-
     className:'',
-
-    html:markerSvg(status),
-
-    iconSize:[36,36],
-
-    iconAnchor:[18,36],
-
+    html:markerSVG(status),
+    iconSize:[38,38],
+    iconAnchor:[19,38],
     popupAnchor:[0,-30]
   });
 }
 
-/* POPUP */
+/* RENDER MAP */
 
-function popupHtml(f){
-
-  const label =
-    f.status === 'on'
-      ? '✓ Open'
-      : f.status === 'off'
-        ? '✕ Closed'
-        : '– No data';
-
-  const cls =
-    f.status === 'on'
-      ? 'ps-on'
-      : f.status === 'off'
-        ? 'ps-off'
-        : 'ps-unk';
-
-  return `
-    <div class="popup-inner">
-
-      <div class="popup-name">
-        ${esc(f.name)}
-      </div>
-
-      <div class="popup-status ${cls}">
-        ${label}
-      </div>
-
-    </div>
-  `;
-}
-
-/* MARKERS */
-
-function renderMarkers(fountains){
+function renderMarkers(){
 
   Object.values(markers).forEach(
-    m => m.remove()
+    m => map.removeLayer(m)
   );
 
   markers = {};
@@ -846,8 +595,8 @@ function renderMarkers(fountains){
   fountains.forEach(f => {
 
     if(
-      f.lat == null ||
-      f.lon == null
+      currentFilter !== 'all' &&
+      f.status !== currentFilter
     ){
       return;
     }
@@ -859,43 +608,67 @@ function renderMarkers(fountains){
       }
     )
     .addTo(map)
-    .bindPopup(
-      popupHtml(f)
-    )
     .bindTooltip(
-      esc(f.name),
+      f.name,
       {
         direction:'top',
         offset:[0,-20]
       }
-    );
-
-    marker.on('click',()=>{
-      selectFountain(f.name,false);
-    });
+    )
+    .bindPopup(`
+      <strong>${f.name}</strong>
+      <br><br>
+      Status:
+      ${
+        f.status === 'on'
+          ? '✓ Open'
+          : f.status === 'off'
+            ? '✕ Closed'
+            : '– No data'
+      }
+    `);
 
     markers[f.name] = marker;
   });
 }
 
-/* LIST */
+/* RENDER LIST */
 
-function renderList(fountains){
+function renderList(){
 
-  const el =
-    document.getElementById(
-      'fountain-list'
-    );
+  const search =
+    document
+      .getElementById('search')
+      .value
+      .toLowerCase();
 
-  el.innerHTML =
-    fountains.map(f => {
+  const list =
+    document.getElementById('list');
+
+  const filtered =
+    fountains.filter(f => {
+
+      if(
+        currentFilter !== 'all' &&
+        f.status !== currentFilter
+      ){
+        return false;
+      }
+
+      return f.name
+        .toLowerCase()
+        .includes(search);
+    });
+
+  list.innerHTML =
+    filtered.map(f => {
 
       const badge =
         f.status === 'on'
-          ? 'badge-on'
+          ? 'badge-open'
           : f.status === 'off'
-            ? 'badge-off'
-            : 'badge-unk';
+            ? 'badge-closed'
+            : 'badge-unknown';
 
       const label =
         f.status === 'on'
@@ -906,15 +679,15 @@ function renderList(fountains){
 
       return `
         <div
-          class="fountain-item"
-          onclick='selectFountain(${JSON.stringify(f.name)},true)'
+          class="item"
+          onclick="zoomToFountain('${f.name.replace(/'/g,"\\'")}')"
         >
 
-          <div class="fi-name">
-            ${esc(f.name)}
+          <div class="item-name">
+            ${f.name}
           </div>
 
-          <div class="fi-badge ${badge}">
+          <div class="badge ${badge}">
             ${label}
           </div>
 
@@ -924,17 +697,16 @@ function renderList(fountains){
     }).join('');
 }
 
-/* SELECT */
+/* ZOOM */
 
-function selectFountain(name){
+function zoomToFountain(name){
 
-  const f = allFountains.find(
-    x => x.name === name
-  );
+  const f =
+    fountains.find(
+      x => x.name === name
+    );
 
   if(!f) return;
-
-  refreshMapSize();
 
   map.flyTo(
     [Number(f.lat), Number(f.lon)],
@@ -953,131 +725,58 @@ function selectFountain(name){
   },700);
 }
 
-/* FILTER */
-
-function getFiltered(){
-
-  const q =
-    document
-      .getElementById('search')
-      .value
-      .toLowerCase();
-
-  return allFountains.filter(f => {
-
-    if(
-      currentFilter !== 'all' &&
-      f.status !== currentFilter
-    ){
-      return false;
-    }
-
-    if(
-      q &&
-      !f.name.toLowerCase().includes(q)
-    ){
-      return false;
-    }
-
-    return true;
-  });
-}
-
-function filterList(){
-  renderList(getFiltered());
-}
-
-/* BUTTONS */
-
-function setFilter(filter,btn){
-
-  currentFilter = filter;
-
-  document
-    .querySelectorAll('.filter-tab')
-    .forEach(t=>{
-      t.className='filter-tab';
-    });
-
-  btn.classList.add(
-    {
-      all:'active-all',
-      on:'active-on',
-      off:'active-off',
-      unknown:'active-unk'
-    }[filter]
-  );
-
-  const filtered =
-    getFiltered();
-
-  renderList(filtered);
-
-  Object.values(markers).forEach(
-    m => m.remove()
-  );
-
-  filtered.forEach(f => {
-
-    if(markers[f.name]){
-      markers[f.name].addTo(map);
-    }
-
-  });
-}
-
 /* STATS */
 
 function updateStats(){
 
   document.getElementById(
-    'count-on'
+    'open-count'
   ).textContent =
-    allFountains.filter(
+    fountains.filter(
       f => f.status === 'on'
     ).length;
 
   document.getElementById(
-    'count-off'
+    'closed-count'
   ).textContent =
-    allFountains.filter(
+    fountains.filter(
       f => f.status === 'off'
     ).length;
 
   document.getElementById(
-    'count-unk'
+    'unknown-count'
   ).textContent =
-    allFountains.filter(
+    fountains.filter(
       f => f.status === 'unknown'
     ).length;
 }
 
-/* LOAD */
+/* LOAD DATA */
 
 async function loadData(){
 
   try{
 
-    const res = await fetch(
-      'data.json?_=' + Date.now()
-    );
+    const res =
+      await fetch(
+        'data.json?_=' + Date.now()
+      );
 
-    const data = await res.json();
+    const data =
+      await res.json();
 
-    allFountains =
+    fountains =
       (data.fountains || []).map(f => ({
         ...f,
         status:f.status || 'unknown'
       }));
 
-    renderMarkers(allFountains);
-
-    renderList(allFountains);
-
+    renderMarkers();
+    renderList();
     updateStats();
 
     document.getElementById(
-      'updated-text'
+      'updated'
     ).textContent =
       data.updated_at
         ? 'Updated ' +
@@ -1091,23 +790,66 @@ async function loadData(){
     console.error(err);
 
     document.getElementById(
-      'updated-text'
+      'updated'
     ).textContent =
-      'Could not load fountain data';
-  }
-
-  finally{
-
-    document.getElementById(
-      'loading'
-    ).style.display='none';
-
-    refreshMapSize();
+      'Could not load data';
   }
 }
 
-initMap();
+/* FILTER BUTTONS */
 
+document.addEventListener(
+  'click',
+  e => {
+
+    if(
+      e.target.matches(
+        '.filters button'
+      )
+    ){
+
+      document
+        .querySelectorAll(
+          '.filters button'
+        )
+        .forEach(
+          b => b.classList.remove('active')
+        );
+
+      e.target.classList.add(
+        'active'
+      );
+
+      currentFilter =
+        e.target.dataset.filter;
+
+      renderMarkers();
+      renderList();
+    }
+  }
+);
+
+/* SEARCH */
+
+document
+  .getElementById('search')
+  .addEventListener(
+    'input',
+    renderList
+  );
+
+/* MOBILE FIX */
+
+window.addEventListener(
+  'resize',
+  ()=>{
+    setTimeout(()=>{
+      map.invalidateSize();
+    },300);
+  }
+);
+
+initMap();
 loadData();
 
 </script>
