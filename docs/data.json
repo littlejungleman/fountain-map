@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-28T22:00:42.133260",
+  "updated_at": "2026-05-28T23:00:41.526788",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -201,8 +201,8 @@
       "name": "Fountain Park Way fountains, Westfield, Wood Lane",
       "lat": 51.51196,
       "lon": -0.22251,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "28/05/2026 09:27 PM"
     },
     {
       "name": "Gauging Square fountains, Wapping",
