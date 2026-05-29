@@ -3,12 +3,12 @@
 Scrape latest fountain statuses from bablands.com
 and write docs/data.json
 
-USES PLAYWRIGHT:
-- avoids stale cached HTML
-- waits for wpDataTables JS rendering
-- captures latest live rows correctly
+Uses:
+- requests for fountain list
+- Playwright for live status table
+  (avoids stale cached HTML)
 
-Keeps original UK date strings
+Preserves original UK date strings
 for popup display.
 """
 
@@ -16,10 +16,9 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+import requests
 from bs4 import BeautifulSoup
-from playwright.sync_api import (
-    sync_playwright
-)
+from playwright.sync_api import sync_playwright
 
 
 LIVE_URL = (
@@ -49,6 +48,13 @@ OUTPUT_FILE = (
     / "data.json"
 )
 
+SESSION = requests.Session()
+
+SESSION.headers.update({
+    "User-Agent":
+        "Mozilla/5.0"
+})
+
 
 def normalise(text):
 
@@ -62,9 +68,29 @@ def normalise(text):
     )
 
 
-def fetch_html(url):
+def fetch_html_requests(url):
 
-    print(f"\nOpening browser: {url}")
+    print(
+        f"\nFetching via requests:"
+        f"\n{url}"
+    )
+
+    r = SESSION.get(
+        url,
+        timeout=30
+    )
+
+    r.raise_for_status()
+
+    return r.text
+
+
+def fetch_html_playwright(url):
+
+    print(
+        f"\nOpening browser:"
+        f"\n{url}"
+    )
 
     with sync_playwright() as p:
 
@@ -76,20 +102,13 @@ def fetch_html(url):
 
         page.goto(
             url,
-            wait_until="domcontentloaded",
+            wait_until="networkidle",
             timeout=60000
         )
 
         # allow wpDataTables/ajax refresh
 
         page.wait_for_timeout(8000)
-
-        # wait for table rows
-
-        page.wait_for_selector(
-            "table tr",
-            timeout=30000
-        )
 
         html = page.content()
 
@@ -112,7 +131,9 @@ def get_fountain_list(html):
 
     names = set()
 
-    for select in soup.find_all("select"):
+    for select in soup.find_all(
+        "select"
+    ):
 
         for option in select.find_all(
             "option"
@@ -259,7 +280,6 @@ def get_live_statuses(html):
                 "status":
                     status,
 
-                # IMPORTANT:
                 # preserve original
                 # UK date string
 
@@ -291,7 +311,7 @@ def get_live_statuses(html):
     if latest:
 
         print(
-            "Latest row timestamp: "
+            "Latest timestamp: "
             f"{latest}"
         )
 
@@ -318,7 +338,8 @@ def get_live_statuses(html):
             "status":
                 data["status"],
 
-            # preserve raw string
+            # preserve original
+            # date string
 
             "reported_at":
                 data["reported_at"],
@@ -351,12 +372,16 @@ def main():
         "\nFetching fountain list..."
     )
 
-    submissions_html = fetch_html(
-        SUBMISSIONS_URL
+    submissions_html = (
+        fetch_html_requests(
+            SUBMISSIONS_URL
+        )
     )
 
-    fountain_names = get_fountain_list(
-        submissions_html
+    fountain_names = (
+        get_fountain_list(
+            submissions_html
+        )
     )
 
     print(
@@ -368,8 +393,10 @@ def main():
         "\nFetching live table..."
     )
 
-    live_html = fetch_html(
-        LIVE_URL
+    live_html = (
+        fetch_html_playwright(
+            LIVE_URL
+        )
     )
 
     statuses = get_live_statuses(
@@ -404,7 +431,7 @@ def main():
                 ),
 
             # preserve original
-            # date string
+            # UK date string
 
             "reported_at":
                 s.get(
@@ -460,17 +487,9 @@ def main():
 
     print("\nDone")
 
-    print(
-        f"Open: {on}"
-    )
-
-    print(
-        f"Closed: {off}"
-    )
-
-    print(
-        f"Unknown: {unknown}"
-    )
+    print(f"Open: {on}")
+    print(f"Closed: {off}")
+    print(f"Unknown: {unknown}")
 
     print(
         f"\nWrote:\n"
