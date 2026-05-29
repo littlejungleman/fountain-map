@@ -19,6 +19,7 @@ for popup display.
 import json
 from pathlib import Path
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
@@ -468,8 +469,11 @@ def main():
     output = {
 
         "updated_at":
-            datetime.utcnow()
-            .isoformat(),
+    datetime.now(
+        ZoneInfo("Europe/London")
+    ).strftime(
+        "%d/%m/%Y, %H:%M"
+    )
 
         "fountains":
             fountains,
