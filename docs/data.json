@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-29T11:00:48.497153",
+  "updated_at": "2026-05-29T12:00:45.310949",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -348,8 +348,8 @@
       "name": "Lordship Recreation Ground paddling pool, Tottenham",
       "lat": 51.59452,
       "lon": -0.08722,
-      "status": "off",
-      "reported_at": "25/05/2026 07:47 PM"
+      "status": "on",
+      "reported_at": "29/05/2026 09:19 AM"
     },
     {
       "name": "Magic Garden water play, Hampton Court Palace",
@@ -649,8 +649,8 @@
       "name": "Whittington Park water play, Archway",
       "lat": 51.56191,
       "lon": -0.12833,
-      "status": "on",
-      "reported_at": "26/05/2026 01:02 PM"
+      "status": "off",
+      "reported_at": "29/05/2026 09:24 AM"
     },
     {
       "name": "Wimbledon Sprinkler Park",
