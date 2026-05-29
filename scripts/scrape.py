@@ -1,20 +1,4 @@
 #!/usr/bin/env python3
-"""
-Scrape latest fountain statuses from bablands.com
-and write docs/data.json
-
-Uses:
-- requests for fountain list
-- Playwright for live table rendering
-
-Handles:
-- DataTables pagination
-- JS-rendered rows
-- Latest status per fountain
-
-Preserves original UK date strings
-for popup display.
-"""
 
 import json
 from pathlib import Path
@@ -27,13 +11,11 @@ from playwright.sync_api import sync_playwright
 
 
 LIVE_URL = (
-    "https://bablands.com/"
-    "fountainwatch-live/"
+    "https://bablands.com/fountainwatch-live/"
 )
 
 SUBMISSIONS_URL = (
-    "https://bablands.com/"
-    "fountainwatch/"
+    "https://bablands.com/fountainwatch/"
 )
 
 BASE_DIR = (
@@ -64,8 +46,13 @@ SESSION.headers.update({
 
 def normalise(text):
 
+    if not text:
+        return ""
+
     return (
         text
+        .replace("\u00a0", " ")
+        .replace("\u200b", "")
         .replace("\u2019", "'")
         .replace("\u2018", "'")
         .replace("\u201c", '"')
@@ -76,10 +63,7 @@ def normalise(text):
 
 def fetch_html_requests(url):
 
-    print(
-        f"\nFetching via requests:"
-        f"\n{url}"
-    )
+    print(f"\nFetching: {url}")
 
     r = SESSION.get(
         url,
@@ -93,10 +77,7 @@ def fetch_html_requests(url):
 
 def open_live_page(url):
 
-    print(
-        f"\nOpening browser:"
-        f"\n{url}"
-    )
+    print(f"\nOpening browser: {url}")
 
     playwright = sync_playwright().start()
 
@@ -112,9 +93,9 @@ def open_live_page(url):
         timeout=60000
     )
 
-    # allow wpDataTables/js hydration
+    # allow JS hydration
 
-    page.wait_for_timeout(12000)
+    page.wait_for_timeout(10000)
 
     return playwright, browser, page
 
@@ -128,9 +109,7 @@ def get_fountain_list(html):
 
     names = set()
 
-    for select in soup.find_all(
-        "select"
-    ):
+    for select in soup.find_all("select"):
 
         for option in select.find_all(
             "option"
@@ -198,68 +177,39 @@ def parse_dt(text):
     return datetime.min
 
 
-def get_all_rows(page):
+def extract_datatable_rows(page):
 
-    print(
-        "\nExtracting rows "
-        "from browser..."
-    )
-
-    # force table length larger if DataTables exists
-
-    page.evaluate("""
-    () => {
-
-        if (
-            window.jQuery &&
-            jQuery.fn.dataTable
-        ) {
-
-            jQuery('table').each(function(){
-
-                try {
-
-                    const table =
-                        jQuery(this)
-                        .DataTable();
-
-                    table.page.len(1000).draw();
-
-                } catch(e) {}
-
-            });
-        }
-    }
-    """)
-
-    page.wait_for_timeout(5000)
+    print("\nExtracting DataTables rows...")
 
     rows = page.evaluate("""
     () => {
 
-        const trs = Array.from(
-            document.querySelectorAll(
-                'table tr'
-            )
-        );
+        if (
+            !window.jQuery ||
+            !jQuery.fn.dataTable
+        ) {
+            return [];
+        }
 
-        return trs.map(tr => {
+        const tables =
+            jQuery.fn.dataTable.tables();
 
-            const cells = Array.from(
-                tr.querySelectorAll(
-                    'td,th'
-                )
-            );
+        if (!tables.length) {
+            return [];
+        }
 
-            return cells.map(
-                c => c.innerText.trim()
-            );
-        });
+        const dt =
+            jQuery(tables[0]).DataTable();
+
+        return dt
+            .rows()
+            .data()
+            .toArray();
     }
     """)
 
     print(
-        f"Browser returned "
+        f"DataTables returned "
         f"{len(rows)} rows"
     )
 
@@ -268,61 +218,41 @@ def get_all_rows(page):
 
 def get_live_statuses(page):
 
-    rows = get_all_rows(page)
+    rows = extract_datatable_rows(page)
 
     entries = {}
-
-    parsed_rows = 0
 
     for cols in rows:
 
         if len(cols) < 3:
             continue
 
-        name = normalise(cols[0])
+        display_name = normalise(cols[0])
 
-        if (
-            not name
-            or name.lower()
-            in {
-                "fountain/splash pad",
-                "status",
-                "entry date"
-            }
-        ):
-            continue
-
-        status = parse_status(
-            cols[1]
-        )
+        status = parse_status(cols[1])
 
         if not status:
             continue
 
-        reported_at = (
-            cols[2].strip()
-        )
+        reported_at = cols[2].strip()
 
         dt = parse_dt(
             reported_at
         )
 
-        parsed_rows += 1
-
-        existing = entries.get(name)
+        existing = entries.get(
+            display_name
+        )
 
         if (
             existing is None
             or dt > existing["dt"]
         ):
 
-            entries[name] = {
+            entries[display_name] = {
 
                 "status":
                     status,
-
-                # preserve raw
-                # UK date string
 
                 "reported_at":
                     reported_at,
@@ -330,11 +260,6 @@ def get_live_statuses(page):
                 "dt":
                     dt,
             }
-
-    print(
-        f"\nParsed "
-        f"{parsed_rows} rows"
-    )
 
     print(
         f"Unique fountains: "
@@ -345,14 +270,14 @@ def get_live_statuses(page):
         entries.items(),
         key=lambda x: x[1]["dt"],
         reverse=True
-    )[:15]
+    )[:20]
 
-    print("\nLatest rows seen:")
+    print("\nLatest rows selected:")
 
     for name, data in recent:
 
         print(
-            f"  {data['reported_at']} "
+            f"{data['reported_at']} "
             f"| {name} "
             f"| {data['status']}"
         )
@@ -412,10 +337,6 @@ def main():
         f"{len(fountain_names)} fountains"
     )
 
-    print(
-        "\nFetching live table..."
-    )
-
     playwright, browser, page = (
         open_live_page(
             LIVE_URL
@@ -457,9 +378,6 @@ def main():
                     "unknown"
                 ),
 
-            # preserve original
-            # UK date string
-
             "reported_at":
                 s.get(
                     "reported_at"
@@ -469,11 +387,11 @@ def main():
     output = {
 
         "updated_at":
-        datetime.now(
-            ZoneInfo("Europe/London")
-            ).strftime(
-                "%d/%m/%Y, %H:%M"
-                ),
+    datetime.now(
+        ZoneInfo("Europe/London")
+    ).strftime(
+        "%d/%m/%Y, %H:%M"
+    ),
 
         "fountains":
             fountains,
@@ -496,30 +414,6 @@ def main():
             indent=2,
             ensure_ascii=False
         )
-
-    on = sum(
-        1
-        for f in fountains
-        if f["status"] == "on"
-    )
-
-    off = sum(
-        1
-        for f in fountains
-        if f["status"] == "off"
-    )
-
-    unknown = sum(
-        1
-        for f in fountains
-        if f["status"] == "unknown"
-    )
-
-    print("\nDone")
-
-    print(f"Open: {on}")
-    print(f"Closed: {off}")
-    print(f"Unknown: {unknown}")
 
     print(
         f"\nWrote:\n"
