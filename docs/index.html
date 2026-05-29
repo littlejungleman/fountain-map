@@ -869,15 +869,8 @@ async function loadData(){
     renderList();
     updateStats();
 
-    document.getElementById(
-      'updated'
-    ).textContent =
-      data.updated_at
-        ? 'Updated ' +
-          new Date(
-            data.updated_at
-          ).toLocaleString('en-GB')
-        : 'Live data loaded';
+    document.getElementById("updated-time").textContent =
+  `Updated ${data.updated_at}`;
 
     /* IMPORTANT MOBILE FIX */
 
