@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-29T06:00:43.384671",
+  "updated_at": "2026-05-29T07:00:44.990184",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -167,7 +167,7 @@
       "lat": 51.51106,
       "lon": -0.11715,
       "status": "on",
-      "reported_at": "26/05/2026 09:22 AM"
+      "reported_at": "28/05/2026 08:47 PM"
     },
     {
       "name": "Elephant Springs water play, Elephant & Castle",
@@ -201,8 +201,8 @@
       "name": "Fountain Park Way fountains, Westfield, Wood Lane",
       "lat": 51.51196,
       "lon": -0.22251,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "28/05/2026 09:27 PM"
     },
     {
       "name": "Gauging Square fountains, Wapping",
