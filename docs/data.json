@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-29T14:01:34.693008",
+  "updated_at": "29/05/2026, 15:34",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -103,8 +103,8 @@
       "name": "Clapham Common splash pad",
       "lat": 51.462309,
       "lon": -0.141072,
-      "status": "off",
-      "reported_at": "27/05/2026 09:40 AM"
+      "status": "on",
+      "reported_at": "29/05/2026 11:40 AM"
     },
     {
       "name": "Clissold Park splash pad, Stoke Newington",
@@ -166,8 +166,8 @@
       "name": "Edmond J Safra fountain court at Somerset House",
       "lat": 51.51106,
       "lon": -0.11715,
-      "status": "on",
-      "reported_at": "26/05/2026 09:22 AM"
+      "status": "off",
+      "reported_at": "29/05/2026 11:07 AM"
     },
     {
       "name": "Elephant Springs water play, Elephant & Castle",
@@ -188,7 +188,7 @@
       "lat": 51.59078,
       "lon": -0.01342,
       "status": "on",
-      "reported_at": "26/05/2026 08:37 AM"
+      "reported_at": "29/05/2026 12:23 PM"
     },
     {
       "name": "Finsbury Park splash play",
@@ -201,8 +201,8 @@
       "name": "Fountain Park Way fountains, Westfield, Wood Lane",
       "lat": 51.51196,
       "lon": -0.22251,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "28/05/2026 09:27 PM"
     },
     {
       "name": "Gauging Square fountains, Wapping",
@@ -285,8 +285,8 @@
       "name": "Kilburn Grange Park splash pad",
       "lat": 51.5439,
       "lon": -0.19832,
-      "status": "unknown",
-      "reported_at": null
+      "status": "off",
+      "reported_at": "27/05/2026 03:04 PM"
     },
     {
       "name": "King George Recreation Ground splash park, Bushey",
@@ -348,8 +348,8 @@
       "name": "Lordship Recreation Ground paddling pool, Tottenham",
       "lat": 51.59452,
       "lon": -0.08722,
-      "status": "off",
-      "reported_at": "25/05/2026 07:47 PM"
+      "status": "on",
+      "reported_at": "29/05/2026 09:19 AM"
     },
     {
       "name": "Magic Garden water play, Hampton Court Palace",
@@ -432,8 +432,8 @@
       "name": "Priory Park paddling pool, Hornsey",
       "lat": 51.58591,
       "lon": -0.12277,
-      "status": "on",
-      "reported_at": "26/05/2026 05:32 PM"
+      "status": "off",
+      "reported_at": "29/05/2026 12:07 PM"
     },
     {
       "name": "Queen's Park paddling pool",
@@ -454,7 +454,7 @@
       "lat": 51.42122,
       "lon": -0.11789,
       "status": "on",
-      "reported_at": "27/05/2026 08:27 AM"
+      "reported_at": "28/05/2026 03:08 PM"
     },
     {
       "name": "Rosemary Gardens water play, Islington",
@@ -649,8 +649,8 @@
       "name": "Whittington Park water play, Archway",
       "lat": 51.56191,
       "lon": -0.12833,
-      "status": "on",
-      "reported_at": "26/05/2026 01:02 PM"
+      "status": "off",
+      "reported_at": "29/05/2026 09:24 AM"
     },
     {
       "name": "Wimbledon Sprinkler Park",
