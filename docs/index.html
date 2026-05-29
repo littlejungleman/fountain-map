@@ -1,427 +1,971 @@
-```python
-#!/usr/bin/env python3
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
-import json
-from pathlib import Path
-from datetime import datetime
-from zoneinfo import ZoneInfo
+<meta charset="UTF-8" />
 
-import requests
-from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+/>
 
+<script data-goatcounter="https://littlejungleman.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 
-LIVE_URL = (
-    "https://bablands.com/fountainwatch-live/"
-)
+<title>London Fountain Map</title>
 
-SUBMISSIONS_URL = (
-    "https://bablands.com/fountainwatch/"
-)
+<!-- LEAFLET -->
 
-BASE_DIR = (
-    Path(__file__)
-    .resolve()
-    .parent
-)
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
 
-COORDS_FILE = (
-    BASE_DIR
-    / "fountain_coords.json"
-)
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-OUTPUT_FILE = (
-    BASE_DIR.parent
-    / "docs"
-    / "data.json"
-)
+<!-- MAPLIBRE -->
 
+<link
+  href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+  rel="stylesheet"
+/>
 
-SESSION = requests.Session()
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 
-SESSION.headers.update({
-    "User-Agent":
-        "Mozilla/5.0"
-})
+<!-- LEAFLET + MAPLIBRE -->
 
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 
-def normalise(text):
+<!-- FONTS -->
 
-    if not text:
-        return ""
+<link rel="preconnect" href="https://fonts.googleapis.com">
 
-    return (
-        text
-        .replace("\u00a0", " ")
-        .replace("\u200b", "")
-        .replace("\u2019", "'")
-        .replace("\u2018", "'")
-        .replace("\u201c", '"')
-        .replace("\u201d", '"')
-        .strip()
+<link
+  href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+
+:root{
+  --blue:#0ea5e9;
+  --blue-dark:#0f4c81;
+
+  --green:#16a34a;
+  --red:#ef4444;
+  --grey:#94a3b8;
+
+  --bg:#f0f9ff;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+html,
+body{
+  height:100%;
+}
+
+body{
+  font-family:'DM Sans',sans-serif;
+  overflow:hidden;
+  background:var(--bg);
+}
+
+/* HEADER */
+
+header{
+  background:
+    linear-gradient(
+      135deg,
+      #0f4c81 0%,
+      #0ea5e9 100%
+    );
+
+  color:white;
+
+  padding:16px 18px;
+
+  box-shadow:
+    0 6px 16px rgba(0,0,0,.12);
+
+  position:relative;
+  z-index:1000;
+}
+
+.logo{
+  font-family:'Fredoka',sans-serif;
+  font-size:1.7rem;
+  font-weight:700;
+}
+
+.subtitle{
+  margin-top:2px;
+  opacity:.92;
+  font-size:.9rem;
+}
+
+/* INFO BAR */
+
+.info-bar{
+  background:white;
+
+  padding:12px 14px;
+
+  text-align:center;
+
+  font-size:.82rem;
+
+  border-bottom:
+    1px solid #e2e8f0;
+}
+
+.info-bar a{
+  color:#0f4c81;
+  font-weight:700;
+}
+
+/* LAYOUT */
+
+.layout{
+  display:flex;
+  height:calc(100vh - 110px);
+}
+
+/* SIDEBAR */
+
+.sidebar{
+  width:360px;
+  min-width:320px;
+
+  background:
+    rgba(255,255,255,.96);
+
+  border-right:
+    1px solid #e2e8f0;
+
+  display:flex;
+  flex-direction:column;
+
+  overflow:hidden;
+}
+
+.sidebar-top{
+  padding:16px;
+}
+
+.search{
+  width:100%;
+
+  border:none;
+  outline:none;
+
+  background:#f1f5f9;
+
+  border-radius:18px;
+
+  padding:14px 16px;
+
+  font-size:1rem;
+}
+
+.filters{
+  display:flex;
+  gap:10px;
+
+  margin-top:14px;
+}
+
+.filters button{
+  flex:1;
+
+  border:none;
+
+  border-radius:14px;
+
+  padding:12px;
+
+  cursor:pointer;
+
+  font-size:.82rem;
+  font-weight:700;
+
+  background:#f1f5f9;
+
+  transition:.15s;
+}
+
+.filters button.active{
+  background:#dbeafe;
+  color:#0f4c81;
+}
+
+.filters button:hover{
+  transform:translateY(-1px);
+}
+
+.stats{
+  display:flex;
+  gap:10px;
+
+  padding:0 16px 16px;
+}
+
+.stat{
+  flex:1;
+
+  background:white;
+
+  border:
+    1px solid #dbe3ef;
+
+  border-radius:16px;
+
+  padding:12px;
+
+  text-align:center;
+}
+
+.stat strong{
+  display:block;
+
+  font-family:'Fredoka',sans-serif;
+  font-size:1.4rem;
+}
+
+/* LIST */
+
+.list{
+  flex:1;
+  overflow-y:auto;
+
+  padding:0 10px 12px;
+}
+
+.item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  background:white;
+
+  border:
+    1px solid #e2e8f0;
+
+  border-radius:18px;
+
+  padding:14px;
+
+  margin-bottom:10px;
+
+  cursor:pointer;
+
+  transition:.15s;
+}
+
+.item:hover{
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 8px 18px rgba(14,165,233,.12);
+}
+
+.item-name{
+  flex:1;
+
+  font-size:.95rem;
+  font-weight:600;
+}
+
+.badge{
+  border-radius:999px;
+
+  padding:6px 10px;
+
+  font-size:.72rem;
+  font-weight:700;
+}
+
+.badge-open{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.badge-closed{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.badge-unknown{
+  background:#e2e8f0;
+  color:#475569;
+}
+
+/* MAP */
+
+.map-wrap{
+  flex:1;
+  position:relative;
+  min-height:300px;
+}
+
+#map{
+  width:100%;
+  height:100%;
+}
+
+.note{
+  position:absolute;
+
+  left:12px;
+  bottom:12px;
+
+  z-index:1000;
+
+  background:
+    rgba(255,255,255,.9);
+
+  padding:7px 12px;
+
+  border-radius:999px;
+
+  font-size:.72rem;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,.08);
+}
+
+/* POPUP */
+
+.popup-title{
+  font-weight:700;
+  margin-bottom:8px;
+}
+
+.popup-status{
+  margin-bottom:8px;
+}
+
+.popup-updated{
+  font-size:.8rem;
+  color:#64748b;
+}
+
+/* MARKERS */
+
+.pin{
+  width:40px;
+  height:40px;
+}
+
+.pin svg{
+  width:100%;
+  height:100%;
+
+  filter:
+    drop-shadow(0 4px 8px rgba(0,0,0,.25));
+}
+
+/* MOBILE */
+
+@media (max-width:700px){
+
+  html,
+  body{
+    height:auto;
+    overflow:auto;
+  }
+
+  body{
+    overflow-x:hidden;
+  }
+
+  .layout{
+    flex-direction:column;
+    height:auto;
+    min-height:100vh;
+  }
+
+  .map-wrap{
+    order:1;
+
+    width:100%;
+    height:55vh;
+    min-height:420px;
+
+    flex:none;
+  }
+
+  #map{
+    height:100%;
+    min-height:420px;
+  }
+
+  .sidebar{
+    order:2;
+
+    width:100%;
+    min-width:100%;
+
+    border-radius:24px 24px 0 0;
+
+    margin-top:-18px;
+
+    position:relative;
+    z-index:1000;
+  }
+
+  .list{
+    overflow:visible;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+  <div class="logo">
+    💧 London Fountain Map
+  </div>
+
+  <div class="subtitle">
+    Live splash pad status
+  </div>
+
+</header>
+
+<div class="info-bar">
+
+  <span id="updated">
+    Loading fountain data...
+  </span>
+
+  •
+
+  Data from
+
+  <a
+    href="https://bablands.com/fountainwatch-live/"
+    target="_blank"
+  >
+    bablands.com
+  </a>
+
+  •
+
+  Submit an update 
+
+  <a
+    href="https://bablands.com/fountainwatch/"
+    target="_blank"
+  >
+    here
+  </a>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+
+  <aside class="sidebar">
+
+    <div class="sidebar-top">
+
+      <input
+        id="search"
+        class="search"
+        type="search"
+        placeholder="Search fountains..."
+      >
+
+      <div class="filters">
+
+        <button
+          class="active"
+          data-filter="all"
+        >
+          All
+        </button>
+
+        <button data-filter="on">
+          ✓ Open
+        </button>
+
+        <button data-filter="off">
+          ✕ Closed
+        </button>
+
+        <button data-filter="unknown">
+          – No data
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="stats">
+
+      <div class="stat">
+        <strong id="open-count">0</strong>
+        Open
+      </div>
+
+      <div class="stat">
+        <strong id="closed-count">0</strong>
+        Closed
+      </div>
+
+      <div class="stat">
+        <strong id="unknown-count">0</strong>
+        No data
+      </div>
+
+    </div>
+
+    <div
+      class="list"
+      id="list"
+    ></div>
+
+  </aside>
+
+  <!-- MAP -->
+
+  <div class="map-wrap">
+
+    <div id="map"></div>
+
+    <div class="note">
+      📍 Locations approximate
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+let map;
+let fountains = [];
+let markers = {};
+let currentFilter = 'all';
+
+/* INIT MAP */
+
+function initMap(){
+
+  map = L.map('map',{
+    center:[51.505,-0.09],
+    zoom:11
+  });
+
+  L.maplibreGL({
+    style:
+      'https://tiles.openfreemap.org/styles/bright'
+  }).addTo(map);
+
+  setTimeout(()=>{
+    map.invalidateSize();
+  },700);
+}
+
+/* SORT ORDER */
+
+function statusOrder(status){
+
+  if(status === 'on') return 1;
+  if(status === 'off') return 2;
+  return 3;
+}
+
+/* MARKER SVG */
+
+function markerSVG(status){
+
+  let color = '#94a3b8';
+  let symbol = '–';
+
+  if(status === 'on'){
+    color = '#16a34a';
+    symbol = '✓';
+  }
+
+  if(status === 'off'){
+    color = '#ef4444';
+    symbol = '✕';
+  }
+
+  return `
+    <div class="pin">
+
+      <svg viewBox="0 0 64 64">
+
+        <path
+          d="M32 2C19 2 8 13 8 26c0 18 24 36 24 36s24-18 24-36C56 13 45 2 32 2z"
+          fill="${color}"
+        />
+
+        <circle
+          cx="32"
+          cy="26"
+          r="16"
+          fill="white"
+        />
+
+        <text
+          x="32"
+          y="34"
+          text-anchor="middle"
+          font-size="24"
+          font-family="Arial"
+          font-weight="bold"
+          fill="${color}"
+        >
+          ${symbol}
+        </text>
+
+      </svg>
+
+    </div>
+  `;
+}
+
+/* ICON */
+
+function makeIcon(status){
+
+  return L.divIcon({
+    className:'',
+    html:markerSVG(status),
+    iconSize:[40,40],
+    iconAnchor:[20,40],
+    popupAnchor:[0,-32]
+  });
+}
+
+/* RENDER MARKERS */
+
+function renderMarkers(){
+
+  Object.values(markers).forEach(
+    marker => map.removeLayer(marker)
+  );
+
+  markers = {};
+
+  fountains.forEach(f => {
+
+    if(
+      currentFilter !== 'all' &&
+      f.status !== currentFilter
+    ){
+      return;
+    }
+
+    const marker = L.marker(
+      [Number(f.lat), Number(f.lon)],
+      {
+        icon:makeIcon(f.status)
+      }
     )
-
-
-def fetch_html_requests(url):
-
-    print(f"\nFetching: {url}")
-
-    r = SESSION.get(
-        url,
-        timeout=30
+    .addTo(map)
+    .bindTooltip(
+      f.name,
+      {
+        direction:'top',
+        offset:[0,-20]
+      }
     )
+    .bindPopup(`
+  <div class="popup-title">
+    ${f.name}
+  </div>
 
-    r.raise_for_status()
+  <div class="popup-status">
+    ${
+      f.status === 'on'
+        ? '✓ Open'
+        : f.status === 'off'
+          ? '✕ Closed'
+          : '– No data'
+    }
+  </div>
 
-    return r.text
+  ${
+    f.reported_at
+      ? `
+        <div class="popup-updated">
+          Last updated:
+          ${f.reported_at}
+        </div>
+      `
+      : ''
+  }
+`);
 
+    markers[f.name] = marker;
+  });
+}
 
-def open_live_page(url):
+/* RENDER LIST */
 
-    print(f"\nOpening browser: {url}")
+function renderList(){
 
-    playwright = sync_playwright().start()
+  const search =
+    document
+      .getElementById('search')
+      .value
+      .toLowerCase();
 
-    browser = playwright.chromium.launch(
-        headless=True
-    )
+  const list =
+    document.getElementById('list');
 
-    page = browser.new_page()
+  const filtered =
+    fountains
+      .filter(f => {
 
-    page.goto(
-        url,
-        wait_until="networkidle",
-        timeout=60000
-    )
-
-    # allow JS hydration
-
-    page.wait_for_timeout(10000)
-
-    return playwright, browser, page
-
-
-def get_fountain_list(html):
-
-    soup = BeautifulSoup(
-        html,
-        "html.parser"
-    )
-
-    names = set()
-
-    for select in soup.find_all("select"):
-
-        for option in select.find_all(
-            "option"
-        ):
-
-            name = normalise(
-                option.get_text(
-                    strip=True
-                )
-            )
-
-            if (
-                name
-                and len(name) > 3
-                and "select"
-                not in name.lower()
-            ):
-
-                names.add(name)
-
-    return sorted(list(names))
-
-
-def parse_status(text):
-
-    t = text.lower()
-
-    if (
-        "off" in t
-        or "closed" in t
-        or "not open" in t
-    ):
-        return "off"
-
-    if (
-        "on" in t
-        or "open" in t
-    ):
-        return "on"
-
-    return None
-
-
-def parse_dt(text):
-
-    formats = [
-
-        "%d/%m/%Y %I:%M %p",
-
-        "%d/%m/%Y %H:%M",
-    ]
-
-    for fmt in formats:
-
-        try:
-
-            return datetime.strptime(
-                text.strip(),
-                fmt
-            )
-
-        except Exception:
-            pass
-
-    return datetime.min
-
-
-def extract_datatable_rows(page):
-
-    print("\nExtracting DataTables rows...")
-
-    rows = page.evaluate("""
-    () => {
-
-        if (
-            !window.jQuery ||
-            !jQuery.fn.dataTable
-        ) {
-            return [];
+        if(
+          currentFilter !== 'all' &&
+          f.status !== currentFilter
+        ){
+          return false;
         }
 
-        const tables =
-            jQuery.fn.dataTable.tables();
+        return f.name
+          .toLowerCase()
+          .includes(search);
+      })
+      .sort((a,b)=>{
 
-        if (!tables.length) {
-            return [];
+        const orderDiff =
+          statusOrder(a.status) -
+          statusOrder(b.status);
+
+        if(orderDiff !== 0){
+          return orderDiff;
         }
 
-        const dt =
-            jQuery(tables[0]).DataTable();
+        return a.name.localeCompare(b.name);
+      });
 
-        return dt
-            .rows()
-            .data()
-            .toArray();
+  list.innerHTML =
+    filtered.map(f => {
+
+      const badge =
+        f.status === 'on'
+          ? 'badge-open'
+          : f.status === 'off'
+            ? 'badge-closed'
+            : 'badge-unknown';
+
+      const label =
+        f.status === 'on'
+          ? 'Open'
+          : f.status === 'off'
+            ? 'Closed'
+            : 'No data';
+
+      return `
+        <div
+          class="item"
+          onclick="zoomToFountain('${f.name.replace(/'/g,"\\'")}')"
+        >
+
+          <div class="item-name">
+            ${f.name}
+          </div>
+
+          <div class="badge ${badge}">
+            ${label}
+          </div>
+
+        </div>
+      `;
+
+    }).join('');
+}
+
+/* ZOOM */
+
+function zoomToFountain(name){
+
+  const f =
+    fountains.find(
+      x => x.name === name
+    );
+
+  if(!f) return;
+
+  map.flyTo(
+    [Number(f.lat), Number(f.lon)],
+    17,
+    {
+      duration:1
     }
-    """)
+  );
 
-    print(
-        f"DataTables returned "
-        f"{len(rows)} rows"
-    )
+  setTimeout(()=>{
 
-    return rows
-
-
-def get_live_statuses(page):
-
-    rows = extract_datatable_rows(page)
-
-    entries = {}
-
-    for cols in rows:
-
-        if len(cols) < 3:
-            continue
-
-        display_name = normalise(cols[0])
-
-        status = parse_status(cols[1])
-
-        if not status:
-            continue
-
-        reported_at = cols[2].strip()
-
-        dt = parse_dt(
-            reported_at
-        )
-
-        existing = entries.get(
-            display_name
-        )
-
-        if (
-            existing is None
-            or dt > existing["dt"]
-        ):
-
-            entries[display_name] = {
-
-                "status":
-                    status,
-
-                "reported_at":
-                    reported_at,
-
-                "dt":
-                    dt,
-            }
-
-    print(
-        f"Unique fountains: "
-        f"{len(entries)}"
-    )
-
-    recent = sorted(
-        entries.items(),
-        key=lambda x: x[1]["dt"],
-        reverse=True
-    )[:20]
-
-    print("\nLatest rows selected:")
-
-    for name, data in recent:
-
-        print(
-            f"{data['reported_at']} "
-            f"| {name} "
-            f"| {data['status']}"
-        )
-
-    return {
-
-        name: {
-
-            "status":
-                data["status"],
-
-            "reported_at":
-                data["reported_at"],
-        }
-
-        for name, data
-        in entries.items()
+    if(markers[name]){
+      markers[name].openPopup();
     }
 
+  },700);
+}
 
-def load_coords():
+/* STATS */
 
-    with open(
-        COORDS_FILE,
-        encoding="utf-8"
-    ) as f:
+function updateStats(){
 
-        coords = json.load(f)
+  document.getElementById(
+    'open-count'
+  ).textContent =
+    fountains.filter(
+      f => f.status === 'on'
+    ).length;
 
-    return {
+  document.getElementById(
+    'closed-count'
+  ).textContent =
+    fountains.filter(
+      f => f.status === 'off'
+    ).length;
 
-        normalise(item["name"]): item
-        for item in coords
+  document.getElementById(
+    'unknown-count'
+  ).textContent =
+    fountains.filter(
+      f => f.status === 'unknown'
+    ).length;
+}
+
+/* LOAD DATA */
+
+async function loadData(){
+
+  try{
+
+    const res =
+      await fetch(
+        'data.json?_=' + Date.now()
+      );
+
+    const data =
+      await res.json();
+
+    fountains =
+      (data.fountains || []).map(f => ({
+        ...f,
+        status:f.status || 'unknown'
+      }));
+
+    renderMarkers();
+    renderList();
+    updateStats();
+
+    document.getElementById("updated").textContent =
+  `Updated ${data.updated_at}`;
+
+    /* IMPORTANT MOBILE FIX */
+
+    setTimeout(()=>{
+      map.invalidateSize();
+    },1000);
+
+  }catch(err){
+
+    console.error(err);
+
+    document.getElementById(
+      'updated'
+    ).textContent =
+      'Could not load data';
+  }
+}
+
+/* FILTER BUTTONS */
+
+document.addEventListener(
+  'click',
+  e => {
+
+    if(
+      e.target.matches(
+        '.filters button'
+      )
+    ){
+
+      document
+        .querySelectorAll(
+          '.filters button'
+        )
+        .forEach(
+          b => b.classList.remove('active')
+        );
+
+      e.target.classList.add(
+        'active'
+      );
+
+      currentFilter =
+        e.target.dataset.filter;
+
+      renderMarkers();
+      renderList();
     }
+  }
+);
 
+/* SEARCH */
 
-def main():
+document
+  .getElementById('search')
+  .addEventListener(
+    'input',
+    renderList
+  );
 
-    print(
-        "\nFetching fountain list..."
-    )
+/* MOBILE FIXES */
 
-    submissions_html = (
-        fetch_html_requests(
-            SUBMISSIONS_URL
-        )
-    )
+window.addEventListener(
+  'load',
+  ()=>{
+    setTimeout(()=>{
+      map.invalidateSize();
+    },1200);
+  }
+);
 
-    fountain_names = (
-        get_fountain_list(
-            submissions_html
-        )
-    )
+window.addEventListener(
+  'resize',
+  ()=>{
+    setTimeout(()=>{
+      map.invalidateSize();
+    },700);
+  }
+);
 
-    print(
-        f"Found "
-        f"{len(fountain_names)} fountains"
-    )
+window.addEventListener(
+  'orientationchange',
+  ()=>{
+    setTimeout(()=>{
+      map.invalidateSize();
+    },1000);
+  }
+);
 
-    playwright, browser, page = (
-        open_live_page(
-            LIVE_URL
-        )
-    )
+/* START */
 
-    statuses = get_live_statuses(
-        page
-    )
+initMap();
+loadData();
 
-    browser.close()
+</script>
 
-    playwright.stop()
-
-    coords = load_coords()
-
-    fountains = []
-
-    for name in fountain_names:
-
-        c = coords.get(name, {})
-
-        s = statuses.get(name, {})
-
-        fountains.append({
-
-            "name":
-                name,
-
-            "lat":
-                c.get("lat"),
-
-            "lon":
-                c.get("lon"),
-
-            "status":
-                s.get(
-                    "status",
-                    "unknown"
-                ),
-
-            "reported_at":
-                s.get(
-                    "reported_at"
-                ),
-        })
-
-    output = {
-
-        "updated_at":
-            datetime.now(
-                ZoneInfo("Europe/London")
-            ).strftime(
-                "%d/%m/%Y, %H:%M"
-            ),
-
-        "fountains":
-            fountains,
-    }
-
-    OUTPUT_FILE.parent.mkdir(
-        parents=True,
-        exist_ok=True
-    )
-
-    with open(
-        OUTPUT_FILE,
-        "w",
-        encoding="utf-8"
-    ) as f:
-
-        json.dump(
-            output,
-            f,
-            indent=2,
-            ensure_ascii=False
-        )
-
-    print(
-        f"\nWrote:\n"
-        f"{OUTPUT_FILE}"
-    )
-
-
-if __name__ == "__main__":
-    main()
-```
+</body>
+</html>
