@@ -3,42 +3,51 @@
 Scrape latest fountain statuses from bablands.com
 and write docs/data.json
 
-Keeps original UK date strings for popup display.
-Includes cache busting to avoid stale data.
+USES PLAYWRIGHT:
+- avoids stale cached HTML
+- waits for wpDataTables JS rendering
+- captures latest live rows correctly
+
+Keeps original UK date strings
+for popup display.
 """
 
 import json
-import time
 from pathlib import Path
 from datetime import datetime
 
-import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import (
+    sync_playwright
+)
 
 
-LIVE_URL = "https://bablands.com/fountainwatch-live/"
-SUBMISSIONS_URL = "https://bablands.com/fountainwatch/"
+LIVE_URL = (
+    "https://bablands.com/"
+    "fountainwatch-live/"
+)
 
-BASE_DIR = Path(__file__).resolve().parent
+SUBMISSIONS_URL = (
+    "https://bablands.com/"
+    "fountainwatch/"
+)
 
-COORDS_FILE = BASE_DIR / "fountain_coords.json"
+BASE_DIR = (
+    Path(__file__)
+    .resolve()
+    .parent
+)
+
+COORDS_FILE = (
+    BASE_DIR
+    / "fountain_coords.json"
+)
 
 OUTPUT_FILE = (
     BASE_DIR.parent
     / "docs"
     / "data.json"
 )
-
-SESSION = requests.Session()
-
-SESSION.headers.update({
-    "User-Agent":
-        "Mozilla/5.0",
-    "Cache-Control":
-        "no-cache",
-    "Pragma":
-        "no-cache",
-})
 
 
 def normalise(text):
@@ -47,28 +56,51 @@ def normalise(text):
         text
         .replace("\u2019", "'")
         .replace("\u2018", "'")
+        .replace("\u201c", '"')
+        .replace("\u201d", '"')
         .strip()
     )
 
 
 def fetch_html(url):
 
-    busted = (
-        f"{url}"
-        f"{'&' if '?' in url else '?'}"
-        f"_={int(time.time())}"
-    )
+    print(f"\nOpening browser: {url}")
 
-    print(f"Fetching {busted}")
+    with sync_playwright() as p:
 
-    r = SESSION.get(
-        busted,
-        timeout=30
-    )
+        browser = p.chromium.launch(
+            headless=True
+        )
 
-    r.raise_for_status()
+        page = browser.new_page()
 
-    return r.text
+        page.goto(
+            url,
+            wait_until="domcontentloaded",
+            timeout=60000
+        )
+
+        # allow wpDataTables/ajax refresh
+
+        page.wait_for_timeout(8000)
+
+        # wait for table rows
+
+        page.wait_for_selector(
+            "table tr",
+            timeout=30000
+        )
+
+        html = page.content()
+
+        browser.close()
+
+        print(
+            f"Fetched "
+            f"{len(html):,} chars"
+        )
+
+        return html
 
 
 def get_fountain_list(html):
@@ -82,17 +114,23 @@ def get_fountain_list(html):
 
     for select in soup.find_all("select"):
 
-        for option in select.find_all("option"):
+        for option in select.find_all(
+            "option"
+        ):
 
             name = normalise(
-                option.get_text(strip=True)
+                option.get_text(
+                    strip=True
+                )
             )
 
             if (
                 name
                 and len(name) > 3
-                and "select" not in name.lower()
+                and "select"
+                not in name.lower()
             ):
+
                 names.add(name)
 
     return sorted(list(names))
@@ -121,17 +159,21 @@ def parse_status(text):
 def parse_dt(text):
 
     formats = [
+
         "%d/%m/%Y %I:%M %p",
+
         "%d/%m/%Y %H:%M",
     ]
 
     for fmt in formats:
 
         try:
+
             return datetime.strptime(
                 text.strip(),
                 fmt
             )
+
         except Exception:
             pass
 
@@ -145,10 +187,13 @@ def get_live_statuses(html):
         "html.parser"
     )
 
-    rows = soup.select("table tr")
+    rows = soup.select(
+        "table tr"
+    )
 
     print(
-        f"Found {len(rows)} table rows"
+        f"\nFound "
+        f"{len(rows)} table rows"
     )
 
     entries = {}
@@ -158,10 +203,12 @@ def get_live_statuses(html):
     for row in rows:
 
         cols = [
+
             td.get_text(
                 " ",
                 strip=True
             )
+
             for td in row.find_all(
                 ["td", "th"]
             )
@@ -183,14 +230,20 @@ def get_live_statuses(html):
         ):
             continue
 
-        status = parse_status(cols[1])
+        status = parse_status(
+            cols[1]
+        )
 
         if not status:
             continue
 
-        reported_at = cols[2].strip()
+        reported_at = (
+            cols[2].strip()
+        )
 
-        dt = parse_dt(reported_at)
+        dt = parse_dt(
+            reported_at
+        )
 
         parsed_rows += 1
 
@@ -207,8 +260,8 @@ def get_live_statuses(html):
                     status,
 
                 # IMPORTANT:
-                # keep ORIGINAL string
-                # for popup display
+                # preserve original
+                # UK date string
 
                 "reported_at":
                     reported_at,
@@ -226,7 +279,8 @@ def get_live_statuses(html):
     )
 
     print(
-        f"Parsed {parsed_rows} rows"
+        f"Parsed "
+        f"{parsed_rows} rows"
     )
 
     print(
@@ -241,6 +295,22 @@ def get_live_statuses(html):
             f"{latest}"
         )
 
+    print("\nMost recent rows:")
+
+    recent = sorted(
+        entries.items(),
+        key=lambda x: x[1]["dt"],
+        reverse=True
+    )[:10]
+
+    for name, data in recent:
+
+        print(
+            f"  {data['reported_at']} "
+            f"| {name} "
+            f"| {data['status']}"
+        )
+
     return {
 
         name: {
@@ -248,8 +318,7 @@ def get_live_statuses(html):
             "status":
                 data["status"],
 
-            # IMPORTANT:
-            # preserve raw UK date string
+            # preserve raw string
 
             "reported_at":
                 data["reported_at"],
@@ -262,7 +331,10 @@ def get_live_statuses(html):
 
 def load_coords():
 
-    with open(COORDS_FILE) as f:
+    with open(
+        COORDS_FILE,
+        encoding="utf-8"
+    ) as f:
 
         coords = json.load(f)
 
@@ -275,7 +347,9 @@ def load_coords():
 
 def main():
 
-    print("\nFetching fountain list...")
+    print(
+        "\nFetching fountain list..."
+    )
 
     submissions_html = fetch_html(
         SUBMISSIONS_URL
@@ -290,7 +364,9 @@ def main():
         f"{len(fountain_names)} fountains"
     )
 
-    print("\nFetching live data...")
+    print(
+        "\nFetching live table..."
+    )
 
     live_html = fetch_html(
         LIVE_URL
@@ -327,17 +403,20 @@ def main():
                     "unknown"
                 ),
 
-            # IMPORTANT:
-            # keep raw UK format
+            # preserve original
+            # date string
 
             "reported_at":
-                s.get("reported_at"),
+                s.get(
+                    "reported_at"
+                ),
         })
 
     output = {
 
         "updated_at":
-            datetime.utcnow().isoformat(),
+            datetime.utcnow()
+            .isoformat(),
 
         "fountains":
             fountains,
@@ -361,9 +440,41 @@ def main():
             ensure_ascii=False
         )
 
+    on = sum(
+        1
+        for f in fountains
+        if f["status"] == "on"
+    )
+
+    off = sum(
+        1
+        for f in fountains
+        if f["status"] == "off"
+    )
+
+    unknown = sum(
+        1
+        for f in fountains
+        if f["status"] == "unknown"
+    )
+
+    print("\nDone")
+
     print(
-        f"\nWrote:"
-        f"\n{OUTPUT_FILE}"
+        f"Open: {on}"
+    )
+
+    print(
+        f"Closed: {off}"
+    )
+
+    print(
+        f"Unknown: {unknown}"
+    )
+
+    print(
+        f"\nWrote:\n"
+        f"{OUTPUT_FILE}"
     )
 
 
