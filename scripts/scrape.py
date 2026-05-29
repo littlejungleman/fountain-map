@@ -1,33 +1,21 @@
 #!/usr/bin/env python3
 
 import json
+import re
 from pathlib import Path
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
 
-LIVE_URL = (
-    "https://bablands.com/fountainwatch-live/"
-)
+LIVE_URL = "https://bablands.com/fountainwatch-live/"
+SUBMISSIONS_URL = "https://bablands.com/fountainwatch/"
 
-SUBMISSIONS_URL = (
-    "https://bablands.com/fountainwatch/"
-)
+BASE_DIR = Path(__file__).resolve().parent
 
-BASE_DIR = (
-    Path(__file__)
-    .resolve()
-    .parent
-)
-
-COORDS_FILE = (
-    BASE_DIR
-    / "fountain_coords.json"
-)
+COORDS_FILE = BASE_DIR / "fountain_coords.json"
 
 OUTPUT_FILE = (
     BASE_DIR.parent
@@ -43,25 +31,53 @@ SESSION.headers.update({
 })
 
 
+# -------------------------
+# NORMALISE
+# -------------------------
+
 def normalise(text):
 
     if not text:
         return ""
 
-    return (
-        str(text)
+    text = str(text)
+
+    text = (
+        text
         .replace("\u00a0", " ")
         .replace("\u200b", "")
         .replace("\u2019", "'")
         .replace("\u2018", "'")
         .replace("\u201c", '"')
         .replace("\u201d", '"')
-        .replace("&", "and")
-        .strip()
     )
 
+    # fix broken HTML entity issue
 
-def fetch_html_requests(url):
+    text = text.replace("&amp;", "and")
+    text = text.replace("andamp;", "and")
+    text = text.replace("&", "and")
+
+    # remove commas for consistent matching
+
+    text = text.replace(",", " ")
+
+    # collapse spaces
+
+    text = re.sub(
+        r"\s+",
+        " ",
+        text
+    )
+
+    return text.strip()
+
+
+# -------------------------
+# FETCH HTML
+# -------------------------
+
+def fetch_html(url):
 
     print(f"\nFetching: {url}")
 
@@ -75,32 +91,11 @@ def fetch_html_requests(url):
     return r.text
 
 
-def open_live_page(url):
+# -------------------------
+# GET FOUNTAIN NAMES
+# -------------------------
 
-    print(f"\nOpening browser: {url}")
-
-    playwright = sync_playwright().start()
-
-    browser = playwright.chromium.launch(
-        headless=True
-    )
-
-    page = browser.new_page()
-
-    page.goto(
-        url,
-        wait_until="networkidle",
-        timeout=60000
-    )
-
-    # wait for DataTable JS
-
-    page.wait_for_timeout(12000)
-
-    return playwright, browser, page
-
-
-def get_fountain_list(html):
+def get_fountain_names(html):
 
     soup = BeautifulSoup(
         html,
@@ -111,9 +106,7 @@ def get_fountain_list(html):
 
     for select in soup.find_all("select"):
 
-        for option in select.find_all(
-            "option"
-        ):
+        for option in select.find_all("option"):
 
             name = normalise(
                 option.get_text(
@@ -123,15 +116,17 @@ def get_fountain_list(html):
 
             if (
                 name
+                and "select" not in name.lower()
                 and len(name) > 3
-                and "select"
-                not in name.lower()
             ):
-
                 names.add(name)
 
     return sorted(list(names))
 
+
+# -------------------------
+# STATUS PARSER
+# -------------------------
 
 def parse_status(text):
 
@@ -152,6 +147,10 @@ def parse_status(text):
 
     return None
 
+
+# -------------------------
+# DATE PARSER
+# -------------------------
 
 def parse_dt(text):
 
@@ -177,81 +176,104 @@ def parse_dt(text):
     return datetime.min
 
 
-def extract_datatable_rows(page):
+# -------------------------
+# LOAD LIVE TABLE
+# -------------------------
 
-    print("\nPreparing DataTable...")
+def get_live_statuses():
 
-    page.evaluate("""
-    () => {
+    print(
+        f"\nOpening browser: "
+        f"{LIVE_URL}"
+    )
 
-        if (
-            !window.jQuery ||
-            !jQuery.fn.dataTable
-        ) {
-            return;
+    with sync_playwright() as p:
+
+        browser = p.chromium.launch(
+            headless=True
+        )
+
+        page = browser.new_page()
+
+        page.goto(
+            LIVE_URL,
+            wait_until="networkidle",
+            timeout=60000
+        )
+
+        # allow JS/DataTables to fully load
+
+        page.wait_for_timeout(12000)
+
+        print(
+            "\nPreparing DataTable..."
+        )
+
+        # force ALL rows visible
+
+        page.evaluate("""
+        () => {
+
+            if (
+                !window.jQuery ||
+                !jQuery.fn.dataTable
+            ) {
+                return;
+            }
+
+            const tables =
+                jQuery.fn.dataTable.tables();
+
+            if (!tables.length) {
+                return;
+            }
+
+            const dt =
+                jQuery(tables[0]).DataTable();
+
+            dt.page.len(-1).draw();
         }
+        """)
 
-        const tables =
-            jQuery.fn.dataTable.tables();
+        page.wait_for_timeout(5000)
 
-        if (!tables.length) {
-            return;
+        print(
+            "\nExtracting DataTables rows..."
+        )
+
+        rows = page.evaluate("""
+        () => {
+
+            if (
+                !window.jQuery ||
+                !jQuery.fn.dataTable
+            ) {
+                return [];
+            }
+
+            const tables =
+                jQuery.fn.dataTable.tables();
+
+            if (!tables.length) {
+                return [];
+            }
+
+            const dt =
+                jQuery(tables[0]).DataTable();
+
+            return dt
+                .rows()
+                .data()
+                .toArray();
         }
+        """)
 
-        const dt =
-            jQuery(tables[0]).DataTable();
-
-        // show ALL rows
-
-        dt.page.len(-1).draw();
-
-    }
-    """)
-
-    # allow redraw
-
-    page.wait_for_timeout(4000)
-
-    print("\nExtracting DataTables rows...")
-
-    rows = page.evaluate("""
-    () => {
-
-        if (
-            !window.jQuery ||
-            !jQuery.fn.dataTable
-        ) {
-            return [];
-        }
-
-        const tables =
-            jQuery.fn.dataTable.tables();
-
-        if (!tables.length) {
-            return [];
-        }
-
-        const dt =
-            jQuery(tables[0]).DataTable();
-
-        return dt
-            .rows({search:'applied'})
-            .data()
-            .toArray();
-    }
-    """)
+        browser.close()
 
     print(
         f"DataTables returned "
         f"{len(rows)} rows"
     )
-
-    return rows
-
-
-def get_live_statuses(page):
-
-    rows = extract_datatable_rows(page)
 
     entries = {}
 
@@ -260,18 +282,22 @@ def get_live_statuses(page):
         if len(cols) < 3:
             continue
 
-        name = normalise(cols[0])
+        raw_name = str(cols[0]).strip()
 
-        status = parse_status(cols[1])
+        raw_status = str(cols[1]).strip()
+
+        raw_date = str(cols[2]).strip()
+
+        name = normalise(raw_name)
+
+        status = parse_status(
+            raw_status
+        )
 
         if not status:
             continue
 
-        reported_at = cols[2].strip()
-
-        dt = parse_dt(
-            reported_at
-        )
+        dt = parse_dt(raw_date)
 
         existing = entries.get(name)
 
@@ -286,7 +312,7 @@ def get_live_statuses(page):
                     status,
 
                 "reported_at":
-                    reported_at,
+                    raw_date,
 
                 "dt":
                     dt,
@@ -313,21 +339,21 @@ def get_live_statuses(page):
             f"| {data['status']}"
         )
 
-    return {
+    print(
+        "\n--- STATUS KEYS CONTAINING ELEPHANT ---"
+    )
 
-        name: {
+    for k in entries.keys():
 
-            "status":
-                data["status"],
+        if "Elephant" in k:
+            print(repr(k))
 
-            "reported_at":
-                data["reported_at"],
-        }
+    return entries
 
-        for name, data
-        in entries.items()
-    }
 
+# -------------------------
+# LOAD COORDS
+# -------------------------
 
 def load_coords():
 
@@ -345,22 +371,22 @@ def load_coords():
     }
 
 
+# -------------------------
+# MAIN
+# -------------------------
+
 def main():
 
     print(
         "\nFetching fountain list..."
     )
 
-    submissions_html = (
-        fetch_html_requests(
-            SUBMISSIONS_URL
-        )
+    html = fetch_html(
+        SUBMISSIONS_URL
     )
 
     fountain_names = (
-        get_fountain_list(
-            submissions_html
-        )
+        get_fountain_names(html)
     )
 
     print(
@@ -368,29 +394,22 @@ def main():
         f"{len(fountain_names)} fountains"
     )
 
-    playwright, browser, page = (
-        open_live_page(
-            LIVE_URL
-        )
-    )
-
-    statuses = get_live_statuses(
-        page
-    )
-
-    browser.close()
-
-    playwright.stop()
+    statuses = get_live_statuses()
 
     coords = load_coords()
 
     fountains = []
 
+    no_matches = []
+
     for name in fountain_names:
 
         c = coords.get(name, {})
 
-        s = statuses.get(name, {})
+        s = statuses.get(name)
+
+        if not s:
+            no_matches.append(name)
 
         fountains.append({
 
@@ -404,23 +423,25 @@ def main():
                 c.get("lon"),
 
             "status":
-                s.get(
-                    "status",
-                    "unknown"
-                ),
+                s["status"]
+                if s else "unknown",
 
             "reported_at":
-                s.get(
-                    "reported_at"
-                ),
+                s["reported_at"]
+                if s else None,
         })
+
+    if no_matches:
+
+        print("\nNO STATUS MATCH:")
+
+        for x in no_matches:
+            print(repr(x))
 
     output = {
 
         "updated_at":
-            datetime.now(
-                ZoneInfo("Europe/London")
-            ).strftime(
+            datetime.now().strftime(
                 "%d/%m/%Y, %H:%M"
             ),
 
@@ -447,8 +468,7 @@ def main():
         )
 
     print(
-        f"\nWrote:\n"
-        f"{OUTPUT_FILE}"
+        f"\nWrote:\n{OUTPUT_FILE}"
     )
 
 
