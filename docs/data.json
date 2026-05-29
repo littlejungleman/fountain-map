@@ -1,5 +1,5 @@
 {
-  "updated_at": "29/05/2026, 17:01",
+  "updated_at": "29/05/2026, 17:53",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -170,7 +170,7 @@
       "reported_at": "29/05/2026 11:07 AM"
     },
     {
-      "name": "Elephant Springs water play, Elephant & Castle",
+      "name": "Elephant Springs water play, Elephant and Castle",
       "lat": 51.493335,
       "lon": -0.095977,
       "status": "unknown",
@@ -261,7 +261,7 @@
       "reported_at": null
     },
     {
-      "name": "John Madejski Garden paddling pool, V&A, South Kensington",
+      "name": "John Madejski Garden paddling pool, VandA, South Kensington",
       "lat": 51.49664,
       "lon": -0.17218,
       "status": "unknown",
@@ -401,7 +401,7 @@
       "reported_at": null
     },
     {
-      "name": "Palewell Common & Fields paddling pool, East Sheen",
+      "name": "Palewell Common and Fields paddling pool, East Sheen",
       "lat": 51.46,
       "lon": -0.26025,
       "status": "unknown",
@@ -527,7 +527,7 @@
       "reported_at": null
     },
     {
-      "name": "St Mary's Churchyard Park fountains, Elephant & Castle",
+      "name": "St Mary's Churchyard Park fountains, Elephant and Castle",
       "lat": 51.493147,
       "lon": -0.101816,
       "status": "unknown",
@@ -569,7 +569,7 @@
       "reported_at": "27/05/2026 06:50 AM"
     },
     {
-      "name": "The Children's Play Pavilion & Park splash pad, Mile End Park",
+      "name": "The Children's Play Pavilion and Park splash pad, Mile End Park",
       "lat": 51.52976,
       "lon": -0.03961,
       "status": "unknown",
