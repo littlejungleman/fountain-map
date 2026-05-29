@@ -35,7 +35,6 @@ OUTPUT_FILE = (
     / "data.json"
 )
 
-
 SESSION = requests.Session()
 
 SESSION.headers.update({
@@ -50,13 +49,14 @@ def normalise(text):
         return ""
 
     return (
-        text
+        str(text)
         .replace("\u00a0", " ")
         .replace("\u200b", "")
         .replace("\u2019", "'")
         .replace("\u2018", "'")
         .replace("\u201c", '"')
         .replace("\u201d", '"')
+        .replace("&", "and")
         .strip()
     )
 
@@ -93,9 +93,9 @@ def open_live_page(url):
         timeout=60000
     )
 
-    # allow JS hydration
+    # wait for DataTable JS
 
-    page.wait_for_timeout(10000)
+    page.wait_for_timeout(12000)
 
     return playwright, browser, page
 
@@ -179,6 +179,39 @@ def parse_dt(text):
 
 def extract_datatable_rows(page):
 
+    print("\nPreparing DataTable...")
+
+    page.evaluate("""
+    () => {
+
+        if (
+            !window.jQuery ||
+            !jQuery.fn.dataTable
+        ) {
+            return;
+        }
+
+        const tables =
+            jQuery.fn.dataTable.tables();
+
+        if (!tables.length) {
+            return;
+        }
+
+        const dt =
+            jQuery(tables[0]).DataTable();
+
+        // show ALL rows
+
+        dt.page.len(-1).draw();
+
+    }
+    """)
+
+    # allow redraw
+
+    page.wait_for_timeout(4000)
+
     print("\nExtracting DataTables rows...")
 
     rows = page.evaluate("""
@@ -202,7 +235,7 @@ def extract_datatable_rows(page):
             jQuery(tables[0]).DataTable();
 
         return dt
-            .rows()
+            .rows({search:'applied'})
             .data()
             .toArray();
     }
@@ -227,7 +260,7 @@ def get_live_statuses(page):
         if len(cols) < 3:
             continue
 
-        display_name = normalise(cols[0])
+        name = normalise(cols[0])
 
         status = parse_status(cols[1])
 
@@ -240,16 +273,14 @@ def get_live_statuses(page):
             reported_at
         )
 
-        existing = entries.get(
-            display_name
-        )
+        existing = entries.get(name)
 
         if (
             existing is None
             or dt > existing["dt"]
         ):
 
-            entries[display_name] = {
+            entries[name] = {
 
                 "status":
                     status,
@@ -387,11 +418,11 @@ def main():
     output = {
 
         "updated_at":
-    datetime.now(
-        ZoneInfo("Europe/London")
-    ).strftime(
-        "%d/%m/%Y, %H:%M"
-    ),
+            datetime.now(
+                ZoneInfo("Europe/London")
+            ).strftime(
+                "%d/%m/%Y, %H:%M"
+            ),
 
         "fountains":
             fountains,
