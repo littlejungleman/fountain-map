@@ -469,11 +469,11 @@ def main():
     output = {
 
         "updated_at":
-    datetime.now(
-        ZoneInfo("Europe/London")
-    ).strftime(
-        "%d/%m/%Y, %H:%M"
-    )
+        datetime.now(
+            ZoneInfo("Europe/London")
+            ).strftime(
+                "%d/%m/%Y, %H:%M"
+                ),
 
         "fountains":
             fountains,
