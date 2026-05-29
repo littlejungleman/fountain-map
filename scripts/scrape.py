@@ -5,8 +5,12 @@ and write docs/data.json
 
 Uses:
 - requests for fountain list
-- Playwright for live status table
-  (avoids stale cached HTML)
+- Playwright for live table rendering
+
+Handles:
+- DataTables pagination
+- JS-rendered rows
+- Latest status per fountain
 
 Preserves original UK date strings
 for popup display.
@@ -48,6 +52,7 @@ OUTPUT_FILE = (
     / "data.json"
 )
 
+
 SESSION = requests.Session()
 
 SESSION.headers.update({
@@ -85,41 +90,32 @@ def fetch_html_requests(url):
     return r.text
 
 
-def fetch_html_playwright(url):
+def open_live_page(url):
 
     print(
         f"\nOpening browser:"
         f"\n{url}"
     )
 
-    with sync_playwright() as p:
+    playwright = sync_playwright().start()
 
-        browser = p.chromium.launch(
-            headless=True
-        )
+    browser = playwright.chromium.launch(
+        headless=True
+    )
 
-        page = browser.new_page()
+    page = browser.new_page()
 
-        page.goto(
-            url,
-            wait_until="networkidle",
-            timeout=60000
-        )
+    page.goto(
+        url,
+        wait_until="networkidle",
+        timeout=60000
+    )
 
-        # allow wpDataTables/ajax refresh
+    # allow wpDataTables/js hydration
 
-        page.wait_for_timeout(8000)
+    page.wait_for_timeout(12000)
 
-        html = page.content()
-
-        browser.close()
-
-        print(
-            f"Fetched "
-            f"{len(html):,} chars"
-        )
-
-        return html
+    return playwright, browser, page
 
 
 def get_fountain_list(html):
@@ -201,39 +197,83 @@ def parse_dt(text):
     return datetime.min
 
 
-def get_live_statuses(html):
-
-    soup = BeautifulSoup(
-        html,
-        "html.parser"
-    )
-
-    rows = soup.select(
-        "table tr"
-    )
+def get_all_rows(page):
 
     print(
-        f"\nFound "
-        f"{len(rows)} table rows"
+        "\nExtracting rows "
+        "from browser..."
     )
+
+    # force table length larger if DataTables exists
+
+    page.evaluate("""
+    () => {
+
+        if (
+            window.jQuery &&
+            jQuery.fn.dataTable
+        ) {
+
+            jQuery('table').each(function(){
+
+                try {
+
+                    const table =
+                        jQuery(this)
+                        .DataTable();
+
+                    table.page.len(1000).draw();
+
+                } catch(e) {}
+
+            });
+        }
+    }
+    """)
+
+    page.wait_for_timeout(5000)
+
+    rows = page.evaluate("""
+    () => {
+
+        const trs = Array.from(
+            document.querySelectorAll(
+                'table tr'
+            )
+        );
+
+        return trs.map(tr => {
+
+            const cells = Array.from(
+                tr.querySelectorAll(
+                    'td,th'
+                )
+            );
+
+            return cells.map(
+                c => c.innerText.trim()
+            );
+        });
+    }
+    """)
+
+    print(
+        f"Browser returned "
+        f"{len(rows)} rows"
+    )
+
+    return rows
+
+
+def get_live_statuses(page):
+
+    rows = get_all_rows(page)
 
     entries = {}
 
     parsed_rows = 0
 
-    for row in rows:
-
-        cols = [
-
-            td.get_text(
-                " ",
-                strip=True
-            )
-
-            for td in row.find_all(
-                ["td", "th"]
-            )
-        ]
+    for cols in rows:
 
         if len(cols) < 3:
             continue
@@ -280,7 +320,7 @@ def get_live_statuses(html):
                 "status":
                     status,
 
-                # preserve original
+                # preserve raw
                 # UK date string
 
                 "reported_at":
@@ -290,16 +330,8 @@ def get_live_statuses(html):
                     dt,
             }
 
-    latest = max(
-        (
-            v["dt"]
-            for v in entries.values()
-        ),
-        default=None
-    )
-
     print(
-        f"Parsed "
+        f"\nParsed "
         f"{parsed_rows} rows"
     )
 
@@ -308,20 +340,13 @@ def get_live_statuses(html):
         f"{len(entries)}"
     )
 
-    if latest:
-
-        print(
-            "Latest timestamp: "
-            f"{latest}"
-        )
-
-    print("\nMost recent rows:")
-
     recent = sorted(
         entries.items(),
         key=lambda x: x[1]["dt"],
         reverse=True
-    )[:10]
+    )[:15]
+
+    print("\nLatest rows seen:")
 
     for name, data in recent:
 
@@ -337,9 +362,6 @@ def get_live_statuses(html):
 
             "status":
                 data["status"],
-
-            # preserve original
-            # date string
 
             "reported_at":
                 data["reported_at"],
@@ -393,15 +415,19 @@ def main():
         "\nFetching live table..."
     )
 
-    live_html = (
-        fetch_html_playwright(
+    playwright, browser, page = (
+        open_live_page(
             LIVE_URL
         )
     )
 
     statuses = get_live_statuses(
-        live_html
+        page
     )
+
+    browser.close()
+
+    playwright.stop()
 
     coords = load_coords()
 
