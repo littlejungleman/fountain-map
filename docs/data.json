@@ -1,5 +1,5 @@
 {
-  "updated_at": "30/05/2026, 19:01",
+  "updated_at": "30/05/2026, 20:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -635,8 +635,8 @@
       "name": "Waterworks Fountains (West Ham Stadium) Queen Elizabeth Olympic Park",
       "lat": 51.539656,
       "lon": -0.013226,
-      "status": "off",
-      "reported_at": "26/05/2026 09:09 AM"
+      "status": "on",
+      "reported_at": "30/05/2026 04:40 PM"
     },
     {
       "name": "Wells Park water play Sydenham",
