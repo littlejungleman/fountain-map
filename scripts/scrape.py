@@ -2,12 +2,12 @@
 
 import json
 import re
+
 from pathlib import Path
 from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
 
 
 LIVE_URL = "https://bablands.com/fountainwatch-live/"
@@ -52,17 +52,11 @@ def normalise(text):
         .replace("\u201d", '"')
     )
 
-    # fix broken HTML entity issue
-
     text = text.replace("&amp;", "and")
     text = text.replace("andamp;", "and")
     text = text.replace("&", "and")
 
-    # remove commas for consistent matching
-
     text = text.replace(",", " ")
-
-    # collapse spaces
 
     text = re.sub(
         r"\s+",
@@ -81,14 +75,18 @@ def fetch_html(url):
 
     print(f"\nFetching: {url}")
 
-    r = SESSION.get(
+    response = SESSION.get(
         url,
+        headers={
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+        },
         timeout=30
     )
 
-    r.raise_for_status()
+    response.raise_for_status()
 
-    return r.text
+    return response.text
 
 
 # -------------------------
@@ -155,21 +153,17 @@ def parse_status(text):
 def parse_dt(text):
 
     formats = [
-
         "%d/%m/%Y %I:%M %p",
-
         "%d/%m/%Y %H:%M",
     ]
 
     for fmt in formats:
 
         try:
-
             return datetime.strptime(
                 text.strip(),
                 fmt
             )
-
         except Exception:
             pass
 
@@ -183,110 +177,53 @@ def parse_dt(text):
 def get_live_statuses():
 
     print(
-        f"\nOpening browser: "
+        f"\nFetching live table: "
         f"{LIVE_URL}"
     )
 
-    with sync_playwright() as p:
+    response = SESSION.get(
+        LIVE_URL,
+        headers={
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+        },
+        timeout=30
+    )
 
-        browser = p.chromium.launch(
-            headless=True
-        )
+    response.raise_for_status()
 
-        page = browser.new_page()
+    soup = BeautifulSoup(
+        response.text,
+        "html.parser"
+    )
 
-        page.goto(
-            LIVE_URL,
-            wait_until="networkidle",
-            timeout=60000
-        )
-
-        # allow JS/DataTables to fully load
-
-        page.wait_for_timeout(12000)
-
-        print(
-            "\nPreparing DataTable..."
-        )
-
-        # force ALL rows visible
-
-        page.evaluate("""
-        () => {
-
-            if (
-                !window.jQuery ||
-                !jQuery.fn.dataTable
-            ) {
-                return;
-            }
-
-            const tables =
-                jQuery.fn.dataTable.tables();
-
-            if (!tables.length) {
-                return;
-            }
-
-            const dt =
-                jQuery(tables[0]).DataTable();
-
-            dt.page.len(-1).draw();
-        }
-        """)
-
-        page.wait_for_timeout(5000)
-
-        print(
-            "\nExtracting DataTables rows..."
-        )
-
-        rows = page.evaluate("""
-        () => {
-
-            if (
-                !window.jQuery ||
-                !jQuery.fn.dataTable
-            ) {
-                return [];
-            }
-
-            const tables =
-                jQuery.fn.dataTable.tables();
-
-            if (!tables.length) {
-                return [];
-            }
-
-            const dt =
-                jQuery(tables[0]).DataTable();
-
-            return dt
-                .rows()
-                .data()
-                .toArray();
-        }
-        """)
-
-        browser.close()
+    rows = soup.select(
+        "#table_1 tbody tr"
+    )
 
     print(
-        f"DataTables returned "
+        f"HTML table returned "
         f"{len(rows)} rows"
     )
 
     entries = {}
 
-    for cols in rows:
+    for row in rows:
+
+        cols = [
+            td.get_text(
+                " ",
+                strip=True
+            )
+            for td in row.find_all("td")
+        ]
 
         if len(cols) < 3:
             continue
 
-        raw_name = str(cols[0]).strip()
-
-        raw_status = str(cols[1]).strip()
-
-        raw_date = str(cols[2]).strip()
+        raw_name = cols[0]
+        raw_status = cols[1]
+        raw_date = cols[2]
 
         name = normalise(raw_name)
 
@@ -319,7 +256,7 @@ def get_live_statuses():
             }
 
     print(
-        f"Unique fountains: "
+        f"Unique fountains with status: "
         f"{len(entries)}"
     )
 
@@ -339,15 +276,6 @@ def get_live_statuses():
             f"| {data['status']}"
         )
 
-    print(
-        "\n--- STATUS KEYS CONTAINING ELEPHANT ---"
-    )
-
-    for k in entries.keys():
-
-        if "Elephant" in k:
-            print(repr(k))
-
     return entries
 
 
@@ -365,7 +293,6 @@ def load_coords():
         coords = json.load(f)
 
     return {
-
         normalise(item["name"]): item
         for item in coords
     }
