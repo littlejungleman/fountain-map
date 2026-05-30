@@ -176,6 +176,139 @@ def parse_dt(text):
 
 def get_live_statuses():
 
+    import time
+
+    def fetch_rows():
+
+        url = (
+            LIVE_URL +
+            f"?t={int(time.time() * 1000)}"
+        )
+
+        response = SESSION.get(
+            url,
+            headers={
+                "Cache-Control": "no-cache",
+                "Pragma": "no-cache"
+            },
+            timeout=30
+        )
+
+        response.raise_for_status()
+
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
+
+        return soup.select(
+            "#table_1 tbody tr"
+        )
+
+    print(
+        f"\nFetching live table: "
+        f"{LIVE_URL}"
+    )
+
+    rows1 = fetch_rows()
+
+    print(
+        f"Pass 1 rows: "
+        f"{len(rows1)}"
+    )
+
+    time.sleep(2)
+
+    rows2 = fetch_rows()
+
+    print(
+        f"Pass 2 rows: "
+        f"{len(rows2)}"
+    )
+
+    rows = (
+        rows2
+        if len(rows2) >= len(rows1)
+        else rows1
+    )
+
+    print(
+        f"Using table with "
+        f"{len(rows)} rows"
+    )
+
+    entries = {}
+
+    for row in rows:
+
+        cols = [
+            td.get_text(
+                " ",
+                strip=True
+            )
+            for td in row.find_all("td")
+        ]
+
+        if len(cols) < 3:
+            continue
+
+        raw_name = cols[0]
+        raw_status = cols[1]
+        raw_date = cols[2]
+
+        name = normalise(raw_name)
+
+        status = parse_status(
+            raw_status
+        )
+
+        if not status:
+            continue
+
+        dt = parse_dt(raw_date)
+
+        existing = entries.get(name)
+
+        if (
+            existing is None
+            or dt > existing["dt"]
+        ):
+
+            entries[name] = {
+
+                "status":
+                    status,
+
+                "reported_at":
+                    raw_date,
+
+                "dt":
+                    dt,
+            }
+
+    print(
+        f"Unique fountains with status: "
+        f"{len(entries)}"
+    )
+
+    recent = sorted(
+        entries.items(),
+        key=lambda x: x[1]["dt"],
+        reverse=True
+    )[:20]
+
+    print("\nLatest rows selected:")
+
+    for name, data in recent:
+
+        print(
+            f"{data['reported_at']} "
+            f"| {name} "
+            f"| {data['status']}"
+        )
+
+    return entries
+
     print(
         f"\nFetching live table: "
         f"{LIVE_URL}"
