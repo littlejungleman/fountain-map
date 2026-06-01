@@ -1,5 +1,5 @@
 {
-  "updated_at": "01/06/2026, 09:00",
+  "updated_at": "01/06/2026, 10:00",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -509,8 +509,8 @@
       "name": "Southwark Park splash pad Bermondsey",
       "lat": 51.494556,
       "lon": -0.054812,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "01/06/2026 09:44 AM"
     },
     {
       "name": "Splash 'n' Play Willen Lake Milton Keynes",
