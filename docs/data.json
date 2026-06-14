@@ -1,5 +1,5 @@
 {
-  "updated_at": "14/06/2026, 13:01",
+  "updated_at": "14/06/2026, 14:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -642,8 +642,8 @@
       "name": "Wells Park water play Sydenham",
       "lat": 51.42919,
       "lon": -0.06748,
-      "status": "on",
-      "reported_at": "29/05/2026 09:12 PM"
+      "status": "off",
+      "reported_at": "14/06/2026 01:08 PM"
     },
     {
       "name": "Whittington Park water play Archway",
