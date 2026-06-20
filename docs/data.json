@@ -1,5 +1,5 @@
 {
-  "updated_at": "20/06/2026, 13:01",
+  "updated_at": "20/06/2026, 14:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -111,7 +111,7 @@
       "lat": 51.56057,
       "lon": -0.08912,
       "status": "off",
-      "reported_at": "26/05/2026 05:17 PM"
+      "reported_at": "20/06/2026 01:19 PM"
     },
     {
       "name": "Coram's Fields paddling pool Bloomsbury",
@@ -145,8 +145,8 @@
       "name": "Diana Princess of Wales Memorial Fountain Hyde Park",
       "lat": 51.50495,
       "lon": -0.1717,
-      "status": "unknown",
-      "reported_at": null
+      "status": "off",
+      "reported_at": "20/06/2026 01:18 PM"
     },
     {
       "name": "Duke of York Square fountains Chelsea",
