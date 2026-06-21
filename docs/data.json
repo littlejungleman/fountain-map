@@ -1,5 +1,5 @@
 {
-  "updated_at": "21/06/2026, 14:00",
+  "updated_at": "21/06/2026, 15:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -614,8 +614,8 @@
       "name": "Victoria Park splash pool Hackney",
       "lat": 51.53897,
       "lon": -0.03441,
-      "status": "on",
-      "reported_at": "19/06/2026 12:40 PM"
+      "status": "off",
+      "reported_at": "21/06/2026 02:46 PM"
     },
     {
       "name": "Vine Road Recreation Ground paddling pool Barnes",
