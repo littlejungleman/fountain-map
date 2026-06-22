@@ -1,5 +1,5 @@
 {
-  "updated_at": "22/06/2026, 20:01",
+  "updated_at": "22/06/2026, 21:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -111,7 +111,7 @@
       "lat": 51.56057,
       "lon": -0.08912,
       "status": "off",
-      "reported_at": "20/06/2026 01:19 PM"
+      "reported_at": "22/06/2026 08:15 PM"
     },
     {
       "name": "Coram's Fields paddling pool Bloomsbury",
@@ -166,8 +166,8 @@
       "name": "Edmond J Safra fountain court at Somerset House",
       "lat": 51.51106,
       "lon": -0.11715,
-      "status": "off",
-      "reported_at": "29/05/2026 11:07 AM"
+      "status": "on",
+      "reported_at": "22/06/2026 08:41 PM"
     },
     {
       "name": "Elephant Springs water play Elephant and Castle",
@@ -419,7 +419,7 @@
       "lat": 51.5567,
       "lon": -0.15753,
       "status": "off",
-      "reported_at": "27/05/2026 07:39 AM"
+      "reported_at": "22/06/2026 08:15 PM"
     },
     {
       "name": "Peckham Rye Park water play",
@@ -566,7 +566,7 @@
       "lat": 51.54306,
       "lon": -0.17301,
       "status": "on",
-      "reported_at": "27/05/2026 06:50 AM"
+      "reported_at": "22/06/2026 08:41 PM"
     },
     {
       "name": "The Children's Play Pavilion and Park splash pad Mile End Park",
