@@ -1,5 +1,5 @@
 {
-  "updated_at": "22/06/2026, 19:01",
+  "updated_at": "22/06/2026, 20:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -146,7 +146,7 @@
       "lat": 51.50495,
       "lon": -0.1717,
       "status": "off",
-      "reported_at": "20/06/2026 01:18 PM"
+      "reported_at": "22/06/2026 07:38 PM"
     },
     {
       "name": "Duke of York Square fountains Chelsea",
@@ -230,7 +230,7 @@
       "lat": 51.53621,
       "lon": -0.1255,
       "status": "on",
-      "reported_at": "26/05/2026 01:02 PM"
+      "reported_at": "22/06/2026 07:55 PM"
     },
     {
       "name": "Greenwich Park Playground water play",
@@ -328,7 +328,7 @@
       "lat": 51.5371,
       "lon": -0.12571,
       "status": "on",
-      "reported_at": "26/05/2026 12:18 PM"
+      "reported_at": "22/06/2026 07:55 PM"
     },
     {
       "name": "London Bridge Pier fountain",
@@ -468,7 +468,7 @@
       "lat": 51.494617,
       "lon": 0.066038,
       "status": "on",
-      "reported_at": "25/05/2026 09:19 PM"
+      "reported_at": "22/06/2026 07:30 PM"
     },
     {
       "name": "Royston splash park Royston",
