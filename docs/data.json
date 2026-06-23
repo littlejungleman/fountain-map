@@ -1,5 +1,5 @@
 {
-  "updated_at": "23/06/2026, 12:08",
+  "updated_at": "23/06/2026, 13:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -376,8 +376,8 @@
       "name": "More London Riverside Fountains London Bridge",
       "lat": 51.50525,
       "lon": -0.08046,
-      "status": "unknown",
-      "reported_at": null
+      "status": "off",
+      "reported_at": "23/06/2026 12:58 PM"
     },
     {
       "name": "Myatt's Fields splash pad Camberwell",
