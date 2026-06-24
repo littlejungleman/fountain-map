@@ -1,5 +1,5 @@
 {
-  "updated_at": "24/06/2026, 12:01",
+  "updated_at": "24/06/2026, 13:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -75,8 +75,8 @@
       "name": "Bruce Castle Park paddling pool Tottenham",
       "lat": 51.6001,
       "lon": -0.07434,
-      "status": "unknown",
-      "reported_at": null
+      "status": "off",
+      "reported_at": "24/06/2026 12:44 PM"
     },
     {
       "name": "Cassiobury Park splash pools Watford",
@@ -188,7 +188,7 @@
       "lat": 51.59078,
       "lon": -0.01342,
       "status": "on",
-      "reported_at": "21/06/2026 08:44 PM"
+      "reported_at": "24/06/2026 12:17 PM"
     },
     {
       "name": "Finsbury Park splash play",
