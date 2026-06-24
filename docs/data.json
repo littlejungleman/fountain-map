@@ -1,5 +1,5 @@
 {
-  "updated_at": "24/06/2026, 17:01",
+  "updated_at": "24/06/2026, 18:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -76,7 +76,7 @@
       "lat": 51.6001,
       "lon": -0.07434,
       "status": "off",
-      "reported_at": "24/06/2026 12:44 PM"
+      "reported_at": "24/06/2026 05:08 PM"
     },
     {
       "name": "Cassiobury Park splash pools Watford",
@@ -188,7 +188,7 @@
       "lat": 51.59078,
       "lon": -0.01342,
       "status": "on",
-      "reported_at": "24/06/2026 12:17 PM"
+      "reported_at": "24/06/2026 05:08 PM"
     },
     {
       "name": "Finsbury Park splash play",
@@ -348,8 +348,8 @@
       "name": "Lordship Recreation Ground paddling pool Tottenham",
       "lat": 51.59452,
       "lon": -0.08722,
-      "status": "on",
-      "reported_at": "29/05/2026 09:19 AM"
+      "status": "off",
+      "reported_at": "24/06/2026 05:08 PM"
     },
     {
       "name": "Magic Garden water play Hampton Court Palace",
