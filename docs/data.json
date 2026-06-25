@@ -1,5 +1,5 @@
 {
-  "updated_at": "25/06/2026, 13:01",
+  "updated_at": "25/06/2026, 14:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -418,8 +418,8 @@
       "name": "Parliament Hill paddling pool Hampstead Heath",
       "lat": 51.5567,
       "lon": -0.15753,
-      "status": "on",
-      "reported_at": "23/06/2026 06:50 PM"
+      "status": "off",
+      "reported_at": "25/06/2026 01:10 PM"
     },
     {
       "name": "Peckham Rye Park water play",
