@@ -1,5 +1,5 @@
 {
-  "updated_at": "25/06/2026, 15:01",
+  "updated_at": "25/06/2026, 16:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -132,7 +132,7 @@
       "lat": 51.45512,
       "lon": 0.11759,
       "status": "on",
-      "reported_at": "26/05/2026 11:07 AM"
+      "reported_at": "25/06/2026 03:28 PM"
     },
     {
       "name": "Design Museum fountains Kensington",
@@ -187,8 +187,8 @@
       "name": "Fellowship Square fountains Walthamstow",
       "lat": 51.59078,
       "lon": -0.01342,
-      "status": "on",
-      "reported_at": "24/06/2026 05:08 PM"
+      "status": "off",
+      "reported_at": "25/06/2026 03:44 PM"
     },
     {
       "name": "Finsbury Park splash play",
