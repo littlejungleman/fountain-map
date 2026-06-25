@@ -1,5 +1,5 @@
 {
-  "updated_at": "25/06/2026, 06:01",
+  "updated_at": "25/06/2026, 07:01",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -12,8 +12,8 @@
       "name": "Animal Adventure water play at London Zoo Camden Town",
       "lat": 51.53529,
       "lon": -0.15343,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "25/06/2026 06:51 AM"
     },
     {
       "name": "Arena Square Wembley Park",
