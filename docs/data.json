@@ -1,5 +1,5 @@
 {
-  "updated_at": "26/06/2026, 11:45",
+  "updated_at": "27/06/2026, 10:58",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -68,8 +68,8 @@
       "name": "Brockwell Park wet play Lambeth",
       "lat": 51.44905,
       "lon": -0.10958,
-      "status": "off",
-      "reported_at": "26/05/2026 05:04 PM"
+      "status": "on",
+      "reported_at": "26/06/2026 03:49 PM"
     },
     {
       "name": "Bruce Castle Park paddling pool Tottenham",
