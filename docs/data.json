@@ -1,5 +1,5 @@
 {
-  "updated_at": "03/07/2026, 11:33",
+  "updated_at": "04/07/2026, 10:54",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -61,8 +61,8 @@
       "name": "Broadgate Exchange play fountains Liverpool Street",
       "lat": 51.519897,
       "lon": -0.080867,
-      "status": "on",
-      "reported_at": "26/05/2026 07:50 PM"
+      "status": "off",
+      "reported_at": "03/07/2026 11:51 AM"
     },
     {
       "name": "Brockwell Park wet play Lambeth",
