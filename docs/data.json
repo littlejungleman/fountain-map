@@ -1,5 +1,5 @@
 {
-  "updated_at": "04/07/2026, 10:54",
+  "updated_at": "05/07/2026, 11:05",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -111,7 +111,7 @@
       "lat": 51.56057,
       "lon": -0.08912,
       "status": "off",
-      "reported_at": "22/06/2026 08:15 PM"
+      "reported_at": "04/07/2026 02:35 PM"
     },
     {
       "name": "Coram's Fields paddling pool Bloomsbury",
@@ -187,8 +187,8 @@
       "name": "Fellowship Square fountains Walthamstow",
       "lat": 51.59078,
       "lon": -0.01342,
-      "status": "off",
-      "reported_at": "25/06/2026 03:44 PM"
+      "status": "on",
+      "reported_at": "04/07/2026 01:10 PM"
     },
     {
       "name": "Finsbury Park splash play",
