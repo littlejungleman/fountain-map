@@ -1,5 +1,5 @@
 {
-  "updated_at": "11/07/2026, 10:15",
+  "updated_at": "12/07/2026, 10:35",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -61,8 +61,8 @@
       "name": "Broadgate Exchange play fountains Liverpool Street",
       "lat": 51.519897,
       "lon": -0.080867,
-      "status": "off",
-      "reported_at": "03/07/2026 11:51 AM"
+      "status": "on",
+      "reported_at": "11/07/2026 04:29 PM"
     },
     {
       "name": "Brockwell Park wet play Lambeth",
@@ -411,8 +411,8 @@
       "name": "Paradise Park splash pad Islington",
       "lat": 51.54831,
       "lon": -0.11225,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "12/07/2026 10:32 AM"
     },
     {
       "name": "Parliament Hill paddling pool Hampstead Heath",
@@ -615,7 +615,7 @@
       "lat": 51.53897,
       "lon": -0.03441,
       "status": "off",
-      "reported_at": "21/06/2026 02:46 PM"
+      "reported_at": "11/07/2026 10:54 AM"
     },
     {
       "name": "Vine Road Recreation Ground paddling pool Barnes",
