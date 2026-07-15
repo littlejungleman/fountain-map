@@ -1,5 +1,5 @@
 {
-  "updated_at": "14/07/2026, 10:47",
+  "updated_at": "15/07/2026, 10:50",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -145,8 +145,8 @@
       "name": "Diana Princess of Wales Memorial Fountain Hyde Park",
       "lat": 51.50495,
       "lon": -0.1717,
-      "status": "off",
-      "reported_at": "22/06/2026 07:38 PM"
+      "status": "on",
+      "reported_at": "14/07/2026 07:18 PM"
     },
     {
       "name": "Duke of York Square fountains Chelsea",
