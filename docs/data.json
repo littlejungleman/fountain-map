@@ -1,5 +1,5 @@
 {
-  "updated_at": "17/07/2026, 10:47",
+  "updated_at": "18/07/2026, 10:19",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -166,8 +166,8 @@
       "name": "Edmond J Safra fountain court at Somerset House",
       "lat": 51.51106,
       "lon": -0.11715,
-      "status": "on",
-      "reported_at": "22/06/2026 08:41 PM"
+      "status": "off",
+      "reported_at": "17/07/2026 05:47 PM"
     },
     {
       "name": "Elephant Springs water play Elephant and Castle",
@@ -565,8 +565,8 @@
       "name": "Swiss Cottage Open Space splash pad Swiss Cottage",
       "lat": 51.54306,
       "lon": -0.17301,
-      "status": "on",
-      "reported_at": "22/06/2026 08:41 PM"
+      "status": "off",
+      "reported_at": "17/07/2026 03:10 PM"
     },
     {
       "name": "The Children's Play Pavilion and Park splash pad Mile End Park",
