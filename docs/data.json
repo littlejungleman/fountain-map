@@ -1,5 +1,5 @@
 {
-  "updated_at": "26/07/2026, 10:44",
+  "updated_at": "27/07/2026, 12:24",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -194,8 +194,8 @@
       "name": "Finsbury Park splash play",
       "lat": 51.569828,
       "lon": -0.10203,
-      "status": "on",
-      "reported_at": "25/05/2026 06:46 PM"
+      "status": "off",
+      "reported_at": "26/07/2026 03:18 PM"
     },
     {
       "name": "Fountain Park Way fountains Westfield Wood Lane",
@@ -650,7 +650,7 @@
       "lat": 51.56191,
       "lon": -0.12833,
       "status": "off",
-      "reported_at": "29/05/2026 09:24 AM"
+      "reported_at": "26/07/2026 03:17 PM"
     },
     {
       "name": "Wimbledon Sprinkler Park",
