@@ -1,5 +1,5 @@
 {
-  "updated_at": "27/07/2026, 12:24",
+  "updated_at": "28/07/2026, 11:18",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -110,8 +110,8 @@
       "name": "Clissold Park splash pad Stoke Newington",
       "lat": 51.56057,
       "lon": -0.08912,
-      "status": "off",
-      "reported_at": "23/07/2026 08:49 PM"
+      "status": "on",
+      "reported_at": "27/07/2026 03:08 PM"
     },
     {
       "name": "Coram's Fields paddling pool Bloomsbury",
@@ -390,8 +390,8 @@
       "name": "North Sheen Recreation Ground paddling pool Richmond",
       "lat": 51.47098,
       "lon": -0.28522,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "27/07/2026 07:31 PM"
     },
     {
       "name": "Norwood Park water play Gypsy Hill",
