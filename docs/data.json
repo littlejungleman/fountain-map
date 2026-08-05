@@ -1,5 +1,5 @@
 {
-  "updated_at": "04/08/2026, 11:23",
+  "updated_at": "05/08/2026, 11:21",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -594,7 +594,7 @@
       "lat": 51.54818,
       "lon": -0.01537,
       "status": "on",
-      "reported_at": "29/07/2026 08:18 AM"
+      "reported_at": "04/08/2026 12:59 PM"
     },
     {
       "name": "Union Park play fountain Wembley",
@@ -614,8 +614,8 @@
       "name": "Victoria Park splash pool Hackney",
       "lat": 51.53897,
       "lon": -0.03441,
-      "status": "off",
-      "reported_at": "11/07/2026 10:54 AM"
+      "status": "on",
+      "reported_at": "04/08/2026 12:59 PM"
     },
     {
       "name": "Vine Road Recreation Ground paddling pool Barnes",
