@@ -1,5 +1,5 @@
 {
-  "updated_at": "06/08/2026, 11:23",
+  "updated_at": "07/08/2026, 10:02",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -173,8 +173,8 @@
       "name": "Elephant Springs water play Elephant and Castle",
       "lat": 51.493335,
       "lon": -0.095977,
-      "status": "on",
-      "reported_at": "18/06/2026 10:03 AM"
+      "status": "off",
+      "reported_at": "06/08/2026 07:35 PM"
     },
     {
       "name": "Elthorne Park Playground water play Hornsey",
