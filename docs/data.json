@@ -1,5 +1,5 @@
 {
-  "updated_at": "11/08/2026, 10:01",
+  "updated_at": "12/08/2026, 10:06",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -257,8 +257,8 @@
       "name": "Jeppe Hein's Appearing Rooms Southbank Centre",
       "lat": 51.506442,
       "lon": -0.116981,
-      "status": "unknown",
-      "reported_at": null
+      "status": "on",
+      "reported_at": "12/08/2026 09:33 AM"
     },
     {
       "name": "John Madejski Garden paddling pool VandA South Kensington",
