@@ -1,5 +1,5 @@
 {
-  "updated_at": "21/08/2026, 09:36",
+  "updated_at": "22/08/2026, 09:26",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -264,8 +264,8 @@
       "name": "John Madejski Garden paddling pool VandA South Kensington",
       "lat": 51.49664,
       "lon": -0.17218,
-      "status": "unknown",
-      "reported_at": null
+      "status": "off",
+      "reported_at": "21/08/2026 11:22 PM"
     },
     {
       "name": "Kensington Memorial Park water play area Ladbroke Grove",
