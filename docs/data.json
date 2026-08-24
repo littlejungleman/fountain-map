@@ -1,5 +1,5 @@
 {
-  "updated_at": "23/08/2026, 09:27",
+  "updated_at": "24/08/2026, 09:48",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -327,8 +327,8 @@
       "name": "Lewis Cubitt Square fountains King's Cross",
       "lat": 51.5371,
       "lon": -0.12571,
-      "status": "on",
-      "reported_at": "22/06/2026 07:55 PM"
+      "status": "off",
+      "reported_at": "23/08/2026 02:19 PM"
     },
     {
       "name": "London Bridge Pier fountain",
