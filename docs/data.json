@@ -1,5 +1,5 @@
 {
-  "updated_at": "25/09/2026, 14:27",
+  "updated_at": "26/09/2026, 13:38",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -173,8 +173,8 @@
       "name": "Elephant Springs water play Elephant and Castle",
       "lat": 51.493335,
       "lon": -0.095977,
-      "status": "on",
-      "reported_at": "17/08/2026 03:42 PM"
+      "status": "off",
+      "reported_at": "26/09/2026 10:55 AM"
     },
     {
       "name": "Elthorne Park Playground water play Hornsey",
@@ -510,7 +510,7 @@
       "lat": 51.494556,
       "lon": -0.054812,
       "status": "on",
-      "reported_at": "05/09/2026 10:42 AM"
+      "reported_at": "26/09/2026 09:40 AM"
     },
     {
       "name": "Splash 'n' Play Willen Lake Milton Keynes",
