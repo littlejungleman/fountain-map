@@ -1,5 +1,5 @@
 {
-  "updated_at": "15/11/2026, 16:07",
+  "updated_at": "16/11/2026, 19:20",
   "fountains": [
     {
       "name": "Aldgate Square fountains",
@@ -47,8 +47,8 @@
       "name": "Beddington Park water play Sutton",
       "lat": 51.37397,
       "lon": -0.14291,
-      "status": "unknown",
-      "reported_at": null
+      "status": "off",
+      "reported_at": "16/11/2026 03:32 PM"
     },
     {
       "name": "Bishop's Park water play Putney",
@@ -209,7 +209,7 @@
       "lat": 51.508125,
       "lon": -0.06599,
       "status": "off",
-      "reported_at": "24/07/2026 12:05 PM"
+      "reported_at": "16/11/2026 03:32 PM"
     },
     {
       "name": "Gloucester Gate Playground water play Regent's Park Camden Town",
